@@ -7,10 +7,11 @@ import type { Member } from '../../types'
 interface Props {
   tripId: string
   tripName: string
+  memberCount: number
   onJoined: (member: Member) => void
 }
 
-export default function JoinModal({ tripId, tripName, onJoined }: Props) {
+export default function JoinModal({ tripId, tripName, memberCount, onJoined }: Props) {
   const [name, setName] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -38,17 +39,12 @@ export default function JoinModal({ tripId, tripName, onJoined }: Props) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      {/* Backdrop */}
-      <motion.div
-        className="absolute inset-0 bg-black/50"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-      />
+      {/* Backdrop — non-dismissable (must join to continue) */}
+      <motion.div className="absolute inset-0 bg-black/60" />
 
       {/* Bottom sheet */}
       <motion.div
-        className="relative bg-white rounded-t-3xl w-full max-w-lg px-6 pb-8 pt-4"
+        className="relative bg-white rounded-t-3xl w-full max-w-lg px-6 pb-10 pt-4"
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
@@ -56,6 +52,7 @@ export default function JoinModal({ tripId, tripName, onJoined }: Props) {
       >
         <div className="bottom-sheet-handle" />
 
+        {/* Header */}
         <div className="text-center mb-7">
           <motion.div
             className="text-5xl mb-3"
@@ -65,15 +62,30 @@ export default function JoinModal({ tripId, tripName, onJoined }: Props) {
           >
             🌴
           </motion.div>
+
+          {/* "You've been invited" — unmistakably different from create flow */}
+          <p className="text-xs font-semibold text-green-600 uppercase tracking-widest mb-1">
+            You're invited!
+          </p>
           <h2
             className="text-2xl font-bold text-gray-900"
             style={{ fontFamily: 'Outfit, sans-serif' }}
           >
-            Join the trip
+            {tripName}
           </h2>
-          <p className="text-sm text-gray-500 mt-1 font-medium">{tripName}</p>
+
+          {/* Member count context */}
+          {memberCount > 0 && (
+            <p className="text-sm text-gray-500 mt-2">
+              {memberCount === 1
+                ? '1 person is planning this trip'
+                : `${memberCount} people are planning this trip`}
+              {' '}— join them! 🎒
+            </p>
+          )}
         </div>
 
+        {/* Form */}
         <form onSubmit={handleJoin} className="space-y-4">
           <div className="float-label-wrapper">
             <input
@@ -114,11 +126,13 @@ export default function JoinModal({ tripId, tripName, onJoined }: Props) {
                 </svg>
                 Joining…
               </span>
-            ) : 'Join Trip 🎒'}
+            ) : 'Join & Vote 🗳️'}
           </motion.button>
         </form>
 
-        <p className="text-xs text-gray-400 text-center mt-4">No sign-up needed. Just your name.</p>
+        <p className="text-xs text-gray-400 text-center mt-4">
+          No sign-up needed. Just your name to vote.
+        </p>
       </motion.div>
     </motion.div>
   )

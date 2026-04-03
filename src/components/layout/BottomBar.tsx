@@ -12,17 +12,20 @@ interface Props {
 
 export default function BottomBar({ trip, members, votedMemberIds, stages }: Props) {
   const unvotedCount = members.length - votedMemberIds.size
+  // Only "nudge" when there are multiple real members AND some haven't voted.
+  // When the planner is alone (no one invited yet), always show the invite CTA.
+  const shouldNudge = members.length > 1 && unvotedCount > 0
 
   function getShareLink(): string {
     if (trip.status === 'confirmed') return shareConfirmedLink(trip.name, trip.invite_code, stages)
-    if (unvotedCount > 0) return shareNudgeLink(trip.name, trip.invite_code, unvotedCount)
+    if (shouldNudge) return shareNudgeLink(trip.name, trip.invite_code, unvotedCount)
     return shareInviteLink(trip.name, trip.invite_code)
   }
 
   function getShareLabel(): string {
     if (trip.status === 'confirmed') return '🎉 Share Confirmed Plan'
-    if (unvotedCount > 0) return `📣 Nudge ${unvotedCount} to vote`
-    return '📤 Invite to WhatsApp'
+    if (shouldNudge) return `📣 Nudge ${unvotedCount} to vote`
+    return '📤 Invite Friends to WhatsApp'
   }
 
   const isConfirmed = trip.status === 'confirmed'

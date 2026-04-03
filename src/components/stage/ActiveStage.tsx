@@ -125,10 +125,17 @@ export default function ActiveStage({
       <div className="p-4 space-y-3">
         {stage.options.length === 0 ? (
           <div className="text-center py-8">
-            <div className="text-3xl mb-2">🗒️</div>
-            <p className="text-sm text-gray-400">
-              {isPlanner ? 'Add the first option below 👇' : 'Waiting for options to be added…'}
-            </p>
+            <div className="text-3xl mb-3">🗒️</div>
+            {isPlanner ? (
+              <p className="text-sm text-gray-400">Add the first option below 👇</p>
+            ) : (
+              <>
+                <p className="text-sm font-medium text-gray-600 mb-1">Options coming soon!</p>
+                <p className="text-xs text-gray-400">
+                  The trip organiser will add options here.{'\n'}You'll vote once they're up.
+                </p>
+              </>
+            )}
           </div>
         ) : (
           <AnimatePresence initial={false}>

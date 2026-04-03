@@ -167,6 +167,7 @@ export default function TripPage() {
             key="join"
             tripId={trip.id}
             tripName={trip.name}
+            memberCount={members.length}
             onJoined={handleJoined}
           />
         )}
