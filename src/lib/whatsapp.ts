@@ -1,6 +1,6 @@
 import type { StageWithOptions } from '../types'
 
-const BASE_URL = import.meta.env.VITE_APP_URL ?? 'https://plankarochalo.com'
+const BASE_URL = (import.meta.env.VITE_APP_URL ?? 'https://plankarochalo.com').trim()
 
 function tripUrl(inviteCode: string) {
   return `${BASE_URL}/trip/${inviteCode}`
