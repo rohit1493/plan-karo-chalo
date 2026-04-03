@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import toast from 'react-hot-toast'
 import type { Member, StageWithOptions, OptionWithVotes } from '../../types'
 import { stageLabel } from '../../lib/whatsapp'
 import { castVote, uncastVote } from '../../api/votes'
@@ -35,13 +37,10 @@ export default function ActiveStage({
   const votedMembersOnStage = new Set(stage.options.flatMap((o) => o.voters.map((v) => v.id)))
 
   async function handleToggleVote(optionId: string) {
-    // CRITICAL: prevent voting on locked stage (race condition guard)
     if (stage.is_locked) return
-    // Prevent double-tap while in flight
     if (pendingVotes.has(optionId)) return
 
     setPendingVotes((prev) => new Set([...prev, optionId]))
-    // Haptic feedback on mobile
     if ('vibrate' in navigator) navigator.vibrate(40)
 
     if (votedOptionIds.has(optionId)) {
@@ -49,14 +48,16 @@ export default function ActiveStage({
       try {
         await uncastVote(optionId, currentMember.id)
       } catch {
-        onVoteAdded(optionId) // rollback optimistic
+        onVoteAdded(optionId)
+        toast.error('Could not remove vote. Try again.')
       }
     } else {
       onVoteAdded(optionId)
       try {
         await castVote(optionId, currentMember.id)
       } catch {
-        onVoteRemoved(optionId) // rollback optimistic
+        onVoteRemoved(optionId)
+        toast.error('Could not cast vote. Try again.')
       }
     }
 
@@ -68,24 +69,54 @@ export default function ActiveStage({
   }
 
   async function handleDeleteOption(optionId: string) {
-    if (!confirm('Remove this option?')) return
-    try {
-      await deleteOption(optionId)
-      onStageChanged()
-    } catch {
-      alert('Could not remove option. Try again.')
-    }
+    const option = stage.options.find((o) => o.id === optionId)
+    toast(
+      (t) => (
+        <div className="flex flex-col gap-2">
+          <p className="font-medium text-gray-900 text-sm">Remove "{option?.title}"?</p>
+          <div className="flex gap-2">
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id)
+                try {
+                  await deleteOption(optionId)
+                  onStageChanged()
+                  toast.success('Option removed')
+                } catch {
+                  toast.error('Could not remove option.')
+                }
+              }}
+              className="flex-1 bg-red-500 text-white text-xs font-semibold py-1.5 rounded-lg"
+            >
+              Remove
+            </button>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="flex-1 bg-gray-100 text-gray-700 text-xs font-semibold py-1.5 rounded-lg"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ),
+      { duration: 8000 }
+    )
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
       {/* Stage header */}
       <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
         <div>
-          <span className="text-xs font-medium text-green-600 uppercase tracking-wide">Active</span>
-          <h3 className="text-base font-semibold text-gray-900">{stageLabel(stage.type)}</h3>
+          <span className="text-[11px] font-semibold text-green-600 uppercase tracking-wider">Active</span>
+          <h3
+            className="text-base font-bold text-gray-900"
+            style={{ fontFamily: 'Outfit, sans-serif' }}
+          >
+            {stageLabel(stage.type)}
+          </h3>
         </div>
-        <span className="text-xs text-gray-500" aria-live="polite" aria-atomic="true">
+        <span className="text-xs text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full" aria-live="polite">
           {votedMembersOnStage.size}/{totalMembers} voted
         </span>
       </div>
@@ -93,49 +124,56 @@ export default function ActiveStage({
       {/* Options */}
       <div className="p-4 space-y-3">
         {stage.options.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-4">
-            {isPlanner ? 'Add the first option below 👇' : 'Waiting for options to be added…'}
-          </p>
+          <div className="text-center py-8">
+            <div className="text-3xl mb-2">🗒️</div>
+            <p className="text-sm text-gray-400">
+              {isPlanner ? 'Add the first option below 👇' : 'Waiting for options to be added…'}
+            </p>
+          </div>
         ) : (
-          stage.options.map((option) => (
-            <OptionCard
-              key={option.id}
-              option={option}
-              totalMembers={totalMembers}
-              isVotedByMe={votedOptionIds.has(option.id)}
-              isPending={pendingVotes.has(option.id)}
-              isLeading={option.vote_count === maxVotes && maxVotes > 0}
-              isLocked={false}
-              onToggleVote={handleToggleVote}
-              onDelete={isPlanner ? handleDeleteOption : undefined}
-              canDelete={isPlanner}
-            />
-          ))
+          <AnimatePresence initial={false}>
+            {stage.options.map((option) => (
+              <OptionCard
+                key={option.id}
+                option={option}
+                totalMembers={totalMembers}
+                isVotedByMe={votedOptionIds.has(option.id)}
+                isPending={pendingVotes.has(option.id)}
+                isLeading={option.vote_count === maxVotes && maxVotes > 0}
+                isLocked={false}
+                onToggleVote={handleToggleVote}
+                onDelete={isPlanner ? handleDeleteOption : undefined}
+                canDelete={isPlanner}
+              />
+            ))}
+          </AnimatePresence>
         )}
       </div>
 
       {/* Planner actions */}
       {isPlanner && (
         <div className="px-4 pb-4 space-y-2">
-          <button
+          <motion.button
+            whileTap={{ scale: 0.97 }}
             onClick={() => setShowAddModal(true)}
             aria-label="Add a new option to this stage"
-            className="w-full border-2 border-dashed border-gray-300 hover:border-green-400 text-gray-500 hover:text-green-600 text-sm font-medium py-2.5 rounded-xl transition-colors"
+            className="w-full border-2 border-dashed border-gray-300 hover:border-green-400 text-gray-500 hover:text-green-600 text-sm font-semibold py-3 rounded-2xl transition-colors"
           >
             + Add Option
-          </button>
+          </motion.button>
 
           {stage.options.length > 0 && (
-            <div className="grid grid-cols-1 gap-2">
+            <div className="space-y-1.5">
               {stage.options.map((opt) => (
-                <button
+                <motion.button
                   key={opt.id}
+                  whileTap={{ scale: 0.97 }}
                   onClick={() => setLockOption(opt)}
-                  className="text-sm text-gray-600 hover:text-green-700 bg-gray-50 hover:bg-green-50 border border-gray-200 hover:border-green-300 py-2 px-3 rounded-lg transition-colors text-left truncate"
+                  className="w-full text-sm text-gray-600 hover:text-green-700 bg-gray-50 hover:bg-green-50 border border-gray-200 hover:border-green-300 py-2 px-3 rounded-xl transition-colors text-left truncate"
                   title={`Lock "${opt.title}"`}
                 >
-                  🔒 Lock "{opt.title.length > 30 ? opt.title.slice(0, 30) + '…' : opt.title}"
-                </button>
+                  🔒 Lock "{opt.title.length > 32 ? opt.title.slice(0, 32) + '…' : opt.title}"
+                </motion.button>
               ))}
             </div>
           )}

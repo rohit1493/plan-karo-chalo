@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion'
 import type { OptionWithVotes } from '../../types'
 import VoteBar from './VoteBar'
 
@@ -34,28 +35,35 @@ export default function OptionCard({
   canDelete,
 }: Props) {
   return (
-    <div
-      className={`relative rounded-xl border-2 p-4 transition-all ${
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      className={`relative rounded-2xl border-2 p-4 transition-all ${
         isLocked
           ? 'border-green-500 bg-green-50'
+          : isVotedByMe
+          ? 'option-card-voted border-green-400 bg-white'
           : isLeading
-          ? 'border-green-300 bg-white'
-          : 'border-gray-200 bg-white'
+          ? 'option-card-leading border-green-300'
+          : 'border-gray-200 bg-white hover:border-gray-300'
       }`}
     >
+      {/* Badge */}
       {isLeading && !isLocked && (
-        <span className="absolute top-3 right-3 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
-          Leading
+        <span className="absolute top-3 right-3 text-[11px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">
+          ✨ Leading
         </span>
       )}
       {isLocked && (
-        <span className="absolute top-3 right-3 text-xs bg-green-600 text-white px-2 py-0.5 rounded-full font-medium">
+        <span className="absolute top-3 right-3 text-[11px] bg-green-600 text-white px-2.5 py-0.5 rounded-full font-semibold">
           🔒 Chosen
         </span>
       )}
 
-      <div className="pr-16">
-        <p className="font-medium text-gray-900">{option.title}</p>
+      <div className={isLocked || isLeading ? 'pr-20' : 'pr-4'}>
+        <p className="font-semibold text-gray-900 text-sm">{option.title}</p>
 
         {option.link && isValidUrl(option.link) && (
           <a
@@ -63,7 +71,7 @@ export default function OptionCard({
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 mt-1"
+            className="inline-flex items-center gap-1 text-xs text-blue-500 hover:text-blue-700 mt-1 font-medium"
           >
             🔗 View link
           </a>
@@ -73,7 +81,7 @@ export default function OptionCard({
         )}
 
         {option.notes && (
-          <p className="text-sm text-gray-500 mt-1">{option.notes}</p>
+          <p className="text-xs text-gray-500 mt-1 leading-relaxed">{option.notes}</p>
         )}
       </div>
 
@@ -81,31 +89,41 @@ export default function OptionCard({
 
       {!isLocked && (
         <div className="flex items-center justify-between mt-3">
-          <button
+          <motion.button
             onClick={() => onToggleVote(option.id)}
             disabled={isPending}
             aria-label={isVotedByMe ? `Remove vote for ${option.title}` : `Vote for ${option.title}`}
             aria-pressed={isVotedByMe}
-            className={`flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-60 ${
+            whileTap={{ scale: 0.93 }}
+            className={`flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl transition-all disabled:opacity-60 ${
               isVotedByMe
-                ? 'bg-green-600 text-white'
+                ? 'bg-green-600 text-white shadow-sm'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
-            {isPending ? '…' : isVotedByMe ? '✓ Voted' : '+ Vote'}
-          </button>
+            {isPending ? (
+              <svg className="animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"/>
+              </svg>
+            ) : isVotedByMe ? (
+              <>✓ Voted</>
+            ) : (
+              <>+ Vote</>
+            )}
+          </motion.button>
 
           {canDelete && onDelete && (
             <button
               onClick={() => onDelete(option.id)}
               aria-label={`Remove option: ${option.title}`}
-              className="text-xs text-red-400 hover:text-red-600 px-2 py-1"
+              className="text-xs text-red-400 hover:text-red-600 px-2 py-1 rounded-lg hover:bg-red-50 transition-colors"
             >
               Remove
             </button>
           )}
         </div>
       )}
-    </div>
+    </motion.div>
   )
 }

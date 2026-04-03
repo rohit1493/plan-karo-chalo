@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { motion } from 'framer-motion'
+import toast from 'react-hot-toast'
 import { addOption } from '../../api/options'
 
 interface Props {
@@ -13,10 +15,9 @@ export default function AddOptionModal({ stageId, memberId, onAdded, onClose }: 
   const [link, setLink] = useState('')
   const [notes, setNotes] = useState('')
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
 
   function isValidUrl(url: string): boolean {
-    if (!url.trim()) return true // optional field
+    if (!url.trim()) return true
     try {
       const p = new URL(url.trim())
       return p.protocol === 'http:' || p.protocol === 'https:'
@@ -27,77 +28,108 @@ export default function AddOptionModal({ stageId, memberId, onAdded, onClose }: 
     e.preventDefault()
     if (!title.trim()) return
     if (link.trim() && !isValidUrl(link)) {
-      setError('Link must be a valid URL starting with http:// or https://')
+      toast.error('Link must start with http:// or https://')
       return
     }
     setLoading(true)
-    setError('')
     try {
       await addOption(stageId, title.trim(), memberId, link.trim() || undefined, notes.trim() || undefined)
       onAdded()
       onClose()
+      toast.success('Option added!')
     } catch {
-      setError('Failed to add option. Try again.')
+      toast.error('Failed to add option. Try again.')
       setLoading(false)
     }
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-end justify-center z-50">
-      <div className="bg-white rounded-t-2xl w-full max-w-lg p-6">
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="text-lg font-semibold text-gray-900">Add an option</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+    <motion.div
+      className="fixed inset-0 z-50 flex items-end justify-center"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <motion.div
+        className="absolute inset-0 bg-black/50"
+        onClick={onClose}
+      />
+
+      <motion.div
+        className="relative bg-white rounded-t-3xl w-full max-w-lg px-6 pb-8 pt-4"
+        initial={{ y: '100%' }}
+        animate={{ y: 0 }}
+        exit={{ y: '100%' }}
+        transition={{ type: 'spring', stiffness: 350, damping: 32 }}
+      >
+        <div className="bottom-sheet-handle" />
+
+        <div className="flex items-center justify-between mb-6">
+          <h3
+            className="text-xl font-bold text-gray-900"
+            style={{ fontFamily: 'Outfit, sans-serif' }}
+          >
+            Add an option
+          </h3>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200"
+          >
+            ✕
+          </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+          <div className="float-label-wrapper">
             <input
               autoFocus
               type="text"
+              id="optTitle"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Zostel Anjuna"
+              placeholder=" "
               maxLength={100}
-              className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="float-label-input"
             />
+            <label htmlFor="optTitle" className="float-label-text">Title* (e.g. Zostel Anjuna)</label>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Link (optional)</label>
+          <div className="float-label-wrapper">
             <input
               type="url"
+              id="optLink"
               value={link}
               onChange={(e) => setLink(e.target.value)}
-              placeholder="https://..."
-              className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              placeholder=" "
+              className="float-label-input"
             />
+            <label htmlFor="optLink" className="float-label-text">Link (optional)</label>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Notes (optional)</label>
+          <div className="float-label-wrapper">
             <input
               type="text"
+              id="optNotes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="e.g. ₹800/night, pool, near beach"
+              placeholder=" "
               maxLength={200}
-              className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="float-label-input"
             />
+            <label htmlFor="optNotes" className="float-label-text">Notes (optional — ₹800/night, pool…)</label>
           </div>
 
-          {error && <p className="text-red-500 text-sm">{error}</p>}
-
-          <button
+          <motion.button
             type="submit"
             disabled={!title.trim() || loading}
-            className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white font-medium py-3 rounded-xl transition-colors"
+            whileTap={{ scale: 0.97 }}
+            className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-200 disabled:text-gray-400 text-white font-bold py-4 rounded-2xl transition-colors btn-glow disabled:shadow-none text-base"
+            style={{ fontFamily: 'Outfit, sans-serif' }}
           >
-            {loading ? 'Adding…' : 'Add Option'}
-          </button>
+            {loading ? 'Adding…' : 'Add Option ✓'}
+          </motion.button>
         </form>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }
