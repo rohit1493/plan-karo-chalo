@@ -27,6 +27,9 @@ export default function CreateTripForm() {
       setError('Failed to create trip. Please try again.')
       setLoading(false)
     }
+    // Note: setLoading(false) intentionally NOT in finally — navigate() unmounts the
+    // component so we let the loading state persist during the route transition.
+    // If navigate fails, the catch block resets it.
   }
 
   return (

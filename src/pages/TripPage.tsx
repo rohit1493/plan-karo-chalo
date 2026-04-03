@@ -154,7 +154,6 @@ export default function TripPage() {
       {member && (
         <BottomBar
           trip={trip}
-          currentMember={member}
           members={members}
           votedMemberIds={votedMemberIdsOnActiveStage}
           stages={stages}

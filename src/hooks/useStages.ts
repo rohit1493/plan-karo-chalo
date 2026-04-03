@@ -66,21 +66,20 @@ export function useStages(tripId: string | undefined) {
       .channel(`stages-${tripId}`)
       .on(
         'postgres_changes',
-        // Filter votes by stage's trip — Supabase doesn't support join filters,
-        // so we listen broadly but debounce to avoid thundering herd
+        // Votes table has no trip_id — Supabase doesn't support join filters.
+        // We listen broadly but debounce (400ms) to collapse bursts and only
+        // refetch our own trip's data.
         { event: '*', schema: 'public', table: 'votes' },
         debouncedReload
       )
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'stages', filter: `trip_id=eq.${tripId}` },
-        () => {
-          // Stage locked — reload immediately (no debounce needed, infrequent)
-          fetchStages(tripId).then(setStages)
-        }
+        () => fetchStages(tripId).then(setStages)
       )
       .on(
         'postgres_changes',
+        // options has no direct trip_id either — listen broadly, debounce handles it
         { event: 'INSERT', schema: 'public', table: 'options' },
         debouncedReload
       )

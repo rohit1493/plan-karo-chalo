@@ -33,7 +33,9 @@ export default function ActiveStage({
   const [pendingVotes, setPendingVotes] = useState<Set<string>>(new Set())
   const isPlanner = currentMember.role !== 'contributor'
 
-  const maxVotes = Math.max(...stage.options.map((o) => o.vote_count), 0)
+  const maxVotes = stage.options.length > 0
+    ? Math.max(...stage.options.map((o) => o.vote_count), 0)
+    : 0
   const votedMembersOnStage = new Set(stage.options.flatMap((o) => o.voters.map((v) => v.id)))
 
   async function handleToggleVote(optionId: string) {
@@ -69,11 +71,12 @@ export default function ActiveStage({
   }
 
   async function handleDeleteOption(optionId: string) {
-    const option = stage.options.find((o) => o.id === optionId)
+    // Capture title at click time so toast doesn't show stale data
+    const title = stage.options.find((o) => o.id === optionId)?.title ?? 'this option'
     toast(
       (t) => (
         <div className="flex flex-col gap-2">
-          <p className="font-medium text-gray-900 text-sm">Remove "{option?.title}"?</p>
+          <p className="font-medium text-gray-900 text-sm">Remove "{title}"?</p>
           <div className="flex gap-2">
             <button
               onClick={async () => {
@@ -132,7 +135,7 @@ export default function ActiveStage({
               <>
                 <p className="text-sm font-medium text-gray-600 mb-1">Options coming soon!</p>
                 <p className="text-xs text-gray-400">
-                  The trip organiser will add options here.{'\n'}You'll vote once they're up.
+                  The trip organiser will add options here. You'll vote once they're up.
                 </p>
               </>
             )}
@@ -187,24 +190,31 @@ export default function ActiveStage({
         </div>
       )}
 
-      {showAddModal && (
-        <AddOptionModal
-          stageId={stage.id}
-          memberId={currentMember.id}
-          onAdded={onStageChanged}
-          onClose={() => setShowAddModal(false)}
-        />
-      )}
+      {/* Modals — wrapped in AnimatePresence so exit animations play */}
+      <AnimatePresence>
+        {showAddModal && (
+          <AddOptionModal
+            key="add-option"
+            stageId={stage.id}
+            memberId={currentMember.id}
+            onAdded={onStageChanged}
+            onClose={() => setShowAddModal(false)}
+          />
+        )}
+      </AnimatePresence>
 
-      {lockOption && (
-        <LockModal
-          stage={stage}
-          option={lockOption}
-          memberId={currentMember.id}
-          onLocked={onStageChanged}
-          onClose={() => setLockOption(null)}
-        />
-      )}
+      <AnimatePresence>
+        {lockOption && (
+          <LockModal
+            key="lock-modal"
+            stage={stage}
+            option={lockOption}
+            memberId={currentMember.id}
+            onLocked={onStageChanged}
+            onClose={() => setLockOption(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }

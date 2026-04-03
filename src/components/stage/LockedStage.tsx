@@ -67,7 +67,7 @@ export default function LockedStage({ stage, totalMembers }: Props) {
                   totalMembers={totalMembers}
                   isVotedByMe={false}
                   isLeading={opt.id === stage.locked_option_id}
-                  isLocked={opt.id === stage.locked_option_id}
+                  isLocked={true}
                   onToggleVote={() => {}}
                 />
               ))}

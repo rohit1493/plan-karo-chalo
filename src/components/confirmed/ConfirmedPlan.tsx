@@ -21,12 +21,14 @@ export default function ConfirmedPlan({ stages }: Props) {
   useEffect(() => {
     const end = Date.now() + 2000
     const colors = ['#22C55E', '#16A34A', '#FFFFFF', '#4ADE80', '#F0FDF4', '#FCD34D']
+    let rafId: number
     const frame = () => {
       confetti({ particleCount: 5, angle: 60, spread: 70, origin: { x: 0 }, colors })
       confetti({ particleCount: 5, angle: 120, spread: 70, origin: { x: 1 }, colors })
-      if (Date.now() < end) requestAnimationFrame(frame)
+      if (Date.now() < end) rafId = requestAnimationFrame(frame)
     }
-    frame()
+    rafId = requestAnimationFrame(frame)
+    return () => cancelAnimationFrame(rafId)
   }, [])
 
   return (

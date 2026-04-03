@@ -19,19 +19,22 @@ export default function LockModal({ stage, option, memberId, onLocked, onClose }
   const [locked, setLocked] = useState(false)
 
   useEffect(() => {
-    if (locked) {
-      const end = Date.now() + 1200
-      const colors = ['#22C55E', '#16A34A', '#4ADE80', '#FFFFFF', '#F0FDF4']
-      const frame = () => {
-        confetti({ particleCount: 6, angle: 60, spread: 55, origin: { x: 0 }, colors })
-        confetti({ particleCount: 6, angle: 120, spread: 55, origin: { x: 1 }, colors })
-        if (Date.now() < end) requestAnimationFrame(frame)
-      }
-      frame()
-      const timer = setTimeout(() => { onLocked(); onClose() }, 1400)
-      return () => clearTimeout(timer)
+    if (!locked) return
+    const end = Date.now() + 1200
+    const colors = ['#22C55E', '#16A34A', '#4ADE80', '#FFFFFF', '#F0FDF4']
+    let rafId: number
+    const frame = () => {
+      confetti({ particleCount: 6, angle: 60, spread: 55, origin: { x: 0 }, colors })
+      confetti({ particleCount: 6, angle: 120, spread: 55, origin: { x: 1 }, colors })
+      if (Date.now() < end) rafId = requestAnimationFrame(frame)
     }
-  }, [locked, onLocked, onClose])
+    rafId = requestAnimationFrame(frame)
+    const timer = setTimeout(() => { onLocked(); onClose() }, 1400)
+    return () => {
+      cancelAnimationFrame(rafId)
+      clearTimeout(timer)
+    }
+  }, [locked]) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleLock() {
     setLoading(true)

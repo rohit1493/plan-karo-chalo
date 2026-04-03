@@ -1,10 +1,9 @@
 import { motion } from 'framer-motion'
-import type { Trip, Member, StageWithOptions } from '../../types'
+import type { Trip, StageWithOptions } from '../../types'
 import { shareInviteLink, shareNudgeLink, shareConfirmedLink } from '../../lib/whatsapp'
 
 interface Props {
   trip: Trip
-  currentMember: Member | null
   members: { id: string }[]
   votedMemberIds: Set<string>
   stages: StageWithOptions[]
