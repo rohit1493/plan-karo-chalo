@@ -65,14 +65,22 @@ export default function AddOptionModal({ stageId, stageType, memberId, onAdded, 
       : title.trim()
 
     setLoading(true)
-    try {
-      await addOption(stageId, finalTitle, memberId, link.trim() || undefined, notes.trim() || undefined)
-      onAdded()
-      onClose()
-      toast.success('Option added!')
-    } catch {
-      toast.error('Failed to add option. Try again.')
-      setLoading(false)
+    // Retry up to 3 times — Supabase free tier DB can be cold on first request
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        await addOption(stageId, finalTitle, memberId, link.trim() || undefined, notes.trim() || undefined)
+        onAdded()
+        onClose()
+        toast.success('Option added!')
+        return
+      } catch {
+        if (attempt < 2) {
+          await new Promise((r) => setTimeout(r, 3000))
+        } else {
+          toast.error('Failed to add option. Try again.')
+          setLoading(false)
+        }
+      }
     }
   }
 
@@ -85,7 +93,7 @@ export default function AddOptionModal({ stageId, stageType, memberId, onAdded, 
     >
       <motion.div
         className="absolute inset-0 bg-black/50"
-        onClick={onClose}
+        onClick={loading ? undefined : onClose}
       />
 
       <motion.div
@@ -166,7 +174,7 @@ export default function AddOptionModal({ stageId, stageType, memberId, onAdded, 
                   maxLength={200}
                   className="float-label-input"
                 />
-                <label htmlFor="optNotes" className="float-label-text">Notes (optional — long weekend, avoid monsoon…)</label>
+                <label htmlFor="optNotes" className="float-label-text">Notes (optional)</label>
               </div>
             </>
           ) : (
@@ -207,7 +215,7 @@ export default function AddOptionModal({ stageId, stageType, memberId, onAdded, 
                   maxLength={200}
                   className="float-label-input"
                 />
-                <label htmlFor="optNotes" className="float-label-text">Notes (optional — ₹800/night, pool…)</label>
+                <label htmlFor="optNotes" className="float-label-text">Notes (optional)</label>
               </div>
             </>
           )}

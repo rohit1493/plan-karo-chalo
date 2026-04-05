@@ -51,16 +51,32 @@ export default function LockModal({ stage, option, memberId, totalMembers, onLoc
 
   async function handleLock() {
     setLoading(true)
-    try {
-      const { error: fnError } = await supabase.functions.invoke('lock-stage', {
-        body: { stageId: stage.id, optionId: option.id, memberId },
-      })
-      if (fnError) throw fnError
-      setLocked(true)
-      toast.success(`🔒 ${stageLabel(stage.type)} locked!`, { duration: 2000 })
-    } catch {
-      toast.error('Failed to lock. Please try again.')
-      setLoading(false)
+    const NEXT_STEP: Record<string, string> = {
+      date: 'Now picking destination 📍',
+      location: 'Now picking accommodation 🏨',
+      stay: 'Now picking activities 🎯',
+      activity: 'Trip is confirmed 🎉',
+    }
+    // Retry up to 3 times — Supabase free tier DB + Edge Function cold start
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const { error: fnError } = await supabase.functions.invoke('lock-stage', {
+          body: { stageId: stage.id, optionId: option.id, memberId },
+        })
+        if (fnError) throw fnError
+        setLocked(true)
+        const next = NEXT_STEP[stage.type] ?? ''
+        const shortTitle = option.title.length > 28 ? option.title.slice(0, 28) + '…' : option.title
+        toast.success(`✅ ${stageLabel(stage.type)} locked — "${shortTitle}"! ${next}`, { duration: 3500 })
+        return
+      } catch {
+        if (attempt < 2) {
+          await new Promise((r) => setTimeout(r, 3000))
+        } else {
+          toast.error('Failed to lock. Please try again.')
+          setLoading(false)
+        }
+      }
     }
   }
 
@@ -114,7 +130,7 @@ export default function LockModal({ stage, option, memberId, totalMembers, onLoc
             <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3.5 mb-5 flex gap-2.5 items-start">
               <span className="text-lg flex-shrink-0">⚠️</span>
               <p className="text-sm text-amber-800 leading-relaxed">
-                This cannot be undone. Voting will close and the stage becomes read-only.
+                This finalises the choice for everyone and unlocks the next step. It cannot be undone.
               </p>
             </div>
             <div className="flex gap-3">

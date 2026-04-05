@@ -18,18 +18,24 @@ export default function CreateTripForm() {
     if (!tripName.trim() || !plannerName.trim()) return
     setLoading(true)
     setError('')
-    try {
-      const sessionId = getSessionId()
-      const inviteCode = nanoid(8)
-      await createTrip(tripName.trim(), plannerName.trim(), inviteCode, sessionId, firstStage)
-      navigate(`/trip/${inviteCode}`)
-    } catch {
-      setError('Failed to create trip. Please try again.')
-      setLoading(false)
+    const sessionId = getSessionId()
+    const inviteCode = nanoid(8)
+    // Retry up to 3 times — Supabase free tier DB can be cold on first request
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        await createTrip(tripName.trim(), plannerName.trim(), inviteCode, sessionId, firstStage)
+        navigate(`/trip/${inviteCode}?new=1`)
+        return
+        // Note: setLoading(false) intentionally omitted — navigate() unmounts the component.
+      } catch {
+        if (attempt < 2) {
+          await new Promise((r) => setTimeout(r, 3000))
+        } else {
+          setError('Failed to create trip. Please try again.')
+          setLoading(false)
+        }
+      }
     }
-    // Note: setLoading(false) intentionally NOT in finally — navigate() unmounts the
-    // component so we let the loading state persist during the route transition.
-    // If navigate fails, the catch block resets it.
   }
 
   return (
