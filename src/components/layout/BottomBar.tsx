@@ -11,9 +11,8 @@ interface Props {
 
 export default function BottomBar({ trip, members, votedMemberIds, stages }: Props) {
   const unvotedCount = members.length - votedMemberIds.size
-  // Only "nudge" when there are multiple real members AND some haven't voted.
-  // When the planner is alone (no one invited yet), always show the invite CTA.
-  const shouldNudge = members.length > 1 && unvotedCount > 0
+  const hasOptions = stages.some((s) => !s.is_locked && s.options.length > 0)
+  const shouldNudge = members.length > 1 && unvotedCount > 0 && hasOptions
 
   function getShareLink(): string {
     if (trip.status === 'confirmed') return shareConfirmedLink(trip.name, trip.invite_code, stages)
@@ -24,6 +23,7 @@ export default function BottomBar({ trip, members, votedMemberIds, stages }: Pro
   function getShareLabel(): string {
     if (trip.status === 'confirmed') return '🎉 Share Confirmed Plan'
     if (shouldNudge) return `📣 Nudge ${unvotedCount} to vote`
+    if (members.length > 1) return '📤 Share Trip Link'
     return '📤 Invite Friends to WhatsApp'
   }
 
@@ -36,24 +36,24 @@ export default function BottomBar({ trip, members, votedMemberIds, stages }: Pro
       animate={{ y: 0 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30, delay: 0.3 }}
     >
-      <div className="px-4 pb-5 pt-3" style={{ background: 'linear-gradient(to top, rgba(255,251,245,1) 70%, rgba(255,251,245,0))' }}>
+      <div
+        className="px-4 pb-5 pt-3"
+        style={{
+          background:
+            'linear-gradient(to top, rgba(251,245,232,1) 70%, rgba(251,245,232,0))',
+        }}
+      >
         <div className="max-w-lg mx-auto">
           <motion.a
             href={getShareLink()}
             aria-label={getShareLabel()}
             whileTap={{ scale: 0.97 }}
-            className={`flex items-center justify-center gap-2 w-full font-bold py-3.5 rounded-2xl transition-colors text-white text-[15px] ${
-              isConfirmed
-                ? 'btn-glow'
-                : unvotedCount > 0
-                ? 'btn-wa-glow'
-                : 'btn-wa-glow'
-            }`}
+            className="flex items-center justify-center gap-2 w-full font-bold py-3.5 rounded-2xl transition-colors text-white text-[15px]"
             style={{
               background: isConfirmed
-                ? 'linear-gradient(135deg, #22C55E 0%, #16A34A 100%)'
+                ? 'linear-gradient(135deg, #E8601C 0%, #C44A12 100%)'
                 : 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)',
-              fontFamily: 'Outfit, sans-serif',
+              fontFamily: 'var(--font-display)',
             }}
           >
             {getShareLabel()}

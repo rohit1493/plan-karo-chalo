@@ -21,7 +21,7 @@ export default function LockModal({ stage, option, memberId, onLocked, onClose }
   useEffect(() => {
     if (!locked) return
     const end = Date.now() + 1200
-    const colors = ['#22C55E', '#16A34A', '#4ADE80', '#FFFFFF', '#F0FDF4']
+    const colors = ['#E8601C', '#F0A500', '#C44A12', '#FFFFFF', '#FFF5EE']
     let rafId: number
     const frame = () => {
       confetti({ particleCount: 6, angle: 60, spread: 55, origin: { x: 0 }, colors })
@@ -58,9 +58,14 @@ export default function LockModal({ stage, option, memberId, onLocked, onClose }
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <motion.div className="absolute inset-0 bg-black/50" onClick={!loading ? onClose : undefined} />
       <motion.div
-        className="relative bg-white rounded-t-3xl w-full max-w-lg px-6 pb-8 pt-4"
+        className="absolute inset-0"
+        style={{ background: 'rgba(18, 13, 9, 0.6)' }}
+        onClick={!loading ? onClose : undefined}
+      />
+      <motion.div
+        className="relative w-full max-w-lg rounded-t-3xl px-6 pb-8 pt-4"
+        style={{ background: 'var(--color-paper)' }}
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
@@ -76,26 +81,38 @@ export default function LockModal({ stage, option, memberId, onLocked, onClose }
             {locked ? '🎉' : '🔒'}
           </motion.div>
           <h3
-            className="text-xl font-bold text-gray-900"
-            style={{ fontFamily: 'Outfit, sans-serif' }}
+            className="text-xl font-bold"
+            style={{ fontFamily: 'var(--font-display)', color: '#120D09' }}
           >
             {locked ? 'Decision locked!' : 'Lock this decision?'}
           </h3>
           {!locked && (
-            <p className="text-sm text-gray-500 mt-1.5 leading-relaxed">
+            <p
+              className="text-sm mt-1.5 leading-relaxed"
+              style={{ color: 'var(--color-muted)', fontFamily: 'var(--font-body)' }}
+            >
               Lock{' '}
-              <span className="font-semibold text-gray-800">"{option.title}"</span>
+              <span className="font-semibold" style={{ color: '#120D09' }}>"{option.title}"</span>
               {' '}as the final choice for{' '}
-              <span className="font-semibold text-gray-800">{stageLabel(stage.type)}</span>?
+              <span className="font-semibold" style={{ color: '#120D09' }}>{stageLabel(stage.type)}</span>?
             </p>
           )}
         </div>
 
         {!locked && (
           <>
-            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3.5 mb-5 flex gap-2.5 items-start">
-              <span className="text-lg flex-shrink-0">⚠️</span>
-              <p className="text-sm text-amber-800 leading-relaxed">
+            <div
+              className="rounded-2xl p-3.5 mb-5 flex gap-2.5 items-start"
+              style={{
+                background: 'rgba(240, 165, 0, 0.1)',
+                border: '1px solid rgba(240, 165, 0, 0.3)',
+              }}
+            >
+              <span className="text-lg flex-shrink-0" aria-hidden="true">⚠️</span>
+              <p
+                className="text-sm leading-relaxed"
+                style={{ color: '#7A5C00', fontFamily: 'var(--font-body)' }}
+              >
                 This cannot be undone. Voting will close and the stage becomes read-only.
               </p>
             </div>
@@ -103,7 +120,12 @@ export default function LockModal({ stage, option, memberId, onLocked, onClose }
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={onClose}
-                className="flex-1 border-2 border-gray-200 text-gray-700 font-semibold py-3.5 rounded-2xl hover:bg-gray-50 transition-colors"
+                className="flex-1 border-2 font-semibold py-3.5 rounded-2xl transition-colors"
+                style={{
+                  borderColor: '#E5DDD2',
+                  color: '#4A3D33',
+                  fontFamily: 'var(--font-body)',
+                }}
               >
                 Cancel
               </motion.button>
@@ -111,8 +133,12 @@ export default function LockModal({ stage, option, memberId, onLocked, onClose }
                 whileTap={{ scale: 0.97 }}
                 onClick={handleLock}
                 disabled={loading}
-                className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-200 text-white font-bold py-3.5 rounded-2xl btn-glow disabled:shadow-none transition-colors"
-                style={{ fontFamily: 'Outfit, sans-serif' }}
+                className="flex-1 text-white font-bold py-3.5 rounded-2xl btn-glow disabled:shadow-none transition-colors"
+                style={{
+                  background: loading ? '#E5DDD2' : '#E8601C',
+                  color: loading ? '#9B8F82' : '#FFFFFF',
+                  fontFamily: 'var(--font-display)',
+                }}
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">

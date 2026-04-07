@@ -27,9 +27,6 @@ export default function CreateTripForm() {
       setError('Failed to create trip. Please try again.')
       setLoading(false)
     }
-    // Note: setLoading(false) intentionally NOT in finally — navigate() unmounts the
-    // component so we let the loading state persist during the route transition.
-    // If navigate fails, the catch block resets it.
   }
 
   return (
@@ -65,7 +62,12 @@ export default function CreateTripForm() {
 
       {/* Stage picker */}
       <div>
-        <p className="text-sm font-medium text-gray-600 mb-3">What do you need to decide first?</p>
+        <p
+          className="text-sm font-medium mb-3"
+          style={{ color: '#4A3D33', fontFamily: 'var(--font-body)' }}
+        >
+          What do you need to decide first?
+        </p>
         <div className="grid grid-cols-2 gap-3">
           {([
             { val: 'date' as const, icon: '🗓️', title: 'Pick dates first', sub: 'Then choose a location' },
@@ -76,17 +78,30 @@ export default function CreateTripForm() {
               type="button"
               whileTap={{ scale: 0.97 }}
               onClick={() => setFirstStage(opt.val)}
-              className={`p-4 rounded-2xl border-2 text-left transition-all ${
-                firstStage === opt.val
-                  ? 'border-green-500 bg-green-50 shadow-sm'
-                  : 'border-gray-200 bg-white hover:border-gray-300'
-              }`}
+              className="p-4 rounded-2xl border-2 text-left transition-all"
+              style={{
+                borderColor: firstStage === opt.val ? '#E8601C' : '#E5DDD2',
+                background: firstStage === opt.val ? 'rgba(232, 96, 28, 0.06)' : '#FFFFFF',
+              }}
             >
-              <div className="text-2xl mb-1.5">{opt.icon}</div>
-              <div className="text-sm font-semibold text-gray-900">{opt.title}</div>
-              <div className="text-xs text-gray-500 mt-0.5">{opt.sub}</div>
+              <div className="text-2xl mb-1.5" aria-hidden="true">{opt.icon}</div>
+              <div
+                className="text-sm font-semibold"
+                style={{ color: '#120D09', fontFamily: 'var(--font-body)' }}
+              >
+                {opt.title}
+              </div>
+              <div
+                className="text-xs mt-0.5"
+                style={{ color: 'var(--color-muted)', fontFamily: 'var(--font-body)' }}
+              >
+                {opt.sub}
+              </div>
               {firstStage === opt.val && (
-                <div className="mt-2 w-5 h-5 rounded-full bg-green-500 flex items-center justify-center ml-auto">
+                <div
+                  className="mt-2 w-5 h-5 rounded-full flex items-center justify-center ml-auto"
+                  style={{ background: '#E8601C' }}
+                >
                   <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
@@ -102,6 +117,7 @@ export default function CreateTripForm() {
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-red-500 text-sm"
+          style={{ fontFamily: 'var(--font-body)' }}
         >
           {error}
         </motion.p>
@@ -111,8 +127,18 @@ export default function CreateTripForm() {
         type="submit"
         disabled={!tripName.trim() || !plannerName.trim() || loading}
         whileTap={{ scale: 0.97 }}
-        className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-200 disabled:text-gray-400 text-white font-bold py-4 rounded-2xl transition-colors text-base btn-glow disabled:shadow-none"
-        style={{ fontFamily: 'Outfit, sans-serif' }}
+        className="w-full text-white font-bold py-4 rounded-2xl transition-colors text-base btn-glow disabled:shadow-none"
+        style={{
+          background:
+            !tripName.trim() || !plannerName.trim() || loading
+              ? '#E5DDD2'
+              : '#E8601C',
+          color:
+            !tripName.trim() || !plannerName.trim() || loading
+              ? '#9B8F82'
+              : '#FFFFFF',
+          fontFamily: 'var(--font-display)',
+        }}
       >
         {loading ? (
           <span className="flex items-center justify-center gap-2">

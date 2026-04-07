@@ -24,7 +24,7 @@ export default function App() {
         toastOptions={{
           duration: 3000,
           style: {
-            fontFamily: 'Inter, system-ui, sans-serif',
+            fontFamily: 'DM Sans, system-ui, sans-serif',
             fontSize: '14px',
             fontWeight: '500',
             borderRadius: '14px',
@@ -32,7 +32,7 @@ export default function App() {
             boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
           },
           success: {
-            iconTheme: { primary: '#22C55E', secondary: '#fff' },
+            iconTheme: { primary: '#E8601C', secondary: '#fff' },
           },
           error: {
             iconTheme: { primary: '#EF4444', secondary: '#fff' },

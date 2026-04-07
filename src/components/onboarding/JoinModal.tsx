@@ -39,21 +39,32 @@ export default function JoinModal({ tripId, tripName, memberCount, onJoined }: P
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      {/* Backdrop — non-dismissable (must join to continue) */}
-      <motion.div className="absolute inset-0 bg-black/60" />
+      {/* Backdrop */}
+      <motion.div className="absolute inset-0" style={{ background: 'rgba(18, 13, 9, 0.72)' }} />
 
       {/* Bottom sheet */}
       <motion.div
-        className="relative bg-white rounded-t-3xl w-full max-w-lg px-6 pb-10 pt-4"
+        className="relative w-full max-w-lg rounded-t-3xl px-6 pb-10 pt-4 overflow-hidden"
+        style={{ background: 'var(--color-paper)' }}
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
         transition={{ type: 'spring', stiffness: 350, damping: 32 }}
       >
+        {/* Decorative dot grid in header */}
+        <div
+          aria-hidden="true"
+          className="absolute top-0 right-0 w-36 h-36 opacity-[0.05] pointer-events-none"
+          style={{
+            backgroundImage: 'radial-gradient(circle, #E8601C 1.5px, transparent 1.5px)',
+            backgroundSize: '18px 18px',
+          }}
+        />
+
         <div className="bottom-sheet-handle" />
 
         {/* Header */}
-        <div className="text-center mb-7">
+        <div className="text-center mb-7 relative z-10">
           <motion.div
             className="text-5xl mb-3"
             initial={{ scale: 0.5, rotate: -10 }}
@@ -63,20 +74,24 @@ export default function JoinModal({ tripId, tripName, memberCount, onJoined }: P
             🌴
           </motion.div>
 
-          {/* "You've been invited" — unmistakably different from create flow */}
-          <p className="text-xs font-semibold text-green-600 uppercase tracking-widest mb-1">
+          <p
+            className="text-xs font-semibold uppercase tracking-widest mb-1"
+            style={{ color: '#E8601C', fontFamily: 'var(--font-body)' }}
+          >
             You're invited!
           </p>
           <h2
-            className="text-2xl font-bold text-gray-900"
-            style={{ fontFamily: 'Outfit, sans-serif' }}
+            className="text-2xl font-bold"
+            style={{ fontFamily: 'var(--font-display)', color: '#120D09' }}
           >
             {tripName}
           </h2>
 
-          {/* Member count context */}
           {memberCount > 0 && (
-            <p className="text-sm text-gray-500 mt-2">
+            <p
+              className="text-sm mt-2"
+              style={{ color: 'var(--color-muted)', fontFamily: 'var(--font-body)' }}
+            >
               {memberCount === 1
                 ? '1 person is planning this trip'
                 : `${memberCount} people are planning this trip`}
@@ -86,7 +101,7 @@ export default function JoinModal({ tripId, tripName, memberCount, onJoined }: P
         </div>
 
         {/* Form */}
-        <form onSubmit={handleJoin} className="space-y-4">
+        <form onSubmit={handleJoin} className="space-y-4 relative z-10">
           <div className="float-label-wrapper">
             <input
               autoFocus
@@ -106,6 +121,7 @@ export default function JoinModal({ tripId, tripName, memberCount, onJoined }: P
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="text-red-500 text-sm"
+              style={{ fontFamily: 'var(--font-body)' }}
             >
               {error}
             </motion.p>
@@ -115,8 +131,12 @@ export default function JoinModal({ tripId, tripName, memberCount, onJoined }: P
             type="submit"
             disabled={!name.trim() || loading}
             whileTap={{ scale: 0.97 }}
-            className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-200 disabled:text-gray-400 text-white font-bold py-4 rounded-2xl transition-colors btn-glow disabled:shadow-none text-base"
-            style={{ fontFamily: 'Outfit, sans-serif' }}
+            className="w-full text-white font-bold py-4 rounded-2xl transition-colors btn-glow disabled:shadow-none text-base"
+            style={{
+              background: !name.trim() || loading ? '#E5DDD2' : '#E8601C',
+              color: !name.trim() || loading ? '#9B8F82' : '#FFFFFF',
+              fontFamily: 'var(--font-display)',
+            }}
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
@@ -130,7 +150,10 @@ export default function JoinModal({ tripId, tripName, memberCount, onJoined }: P
           </motion.button>
         </form>
 
-        <p className="text-xs text-gray-400 text-center mt-4">
+        <p
+          className="text-xs text-center mt-4 relative z-10"
+          style={{ color: 'var(--color-muted)', fontFamily: 'var(--font-body)' }}
+        >
           No sign-up needed. Just your name to vote.
         </p>
       </motion.div>

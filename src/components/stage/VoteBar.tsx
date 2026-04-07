@@ -32,16 +32,22 @@ export default function VoteBar({ voteCount, totalMembers, voters }: Props) {
     <div className="mt-3">
       {/* Animated bar */}
       <div className="flex items-center gap-2">
-        <div className="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
+        <div
+          className="flex-1 rounded-full h-2 overflow-hidden"
+          style={{ background: 'rgba(18, 13, 9, 0.08)' }}
+        >
           <motion.div
             className="h-full rounded-full"
-            style={{ background: 'linear-gradient(90deg, #22C55E, #16A34A)' }}
+            style={{ background: 'linear-gradient(90deg, #E8601C, #C44A12)' }}
             initial={{ width: 0 }}
             animate={{ width: voteCount > 0 ? `${Math.max(pct, 8)}%` : '0%' }}
             transition={{ duration: 0.5, ease: 'easeOut' }}
           />
         </div>
-        <span className="text-xs text-gray-500 w-12 text-right flex-shrink-0">
+        <span
+          className="text-xs w-12 text-right flex-shrink-0"
+          style={{ color: 'var(--color-muted)', fontFamily: 'var(--font-body)' }}
+        >
           {voteCount}/{totalMembers}
         </span>
       </div>
@@ -70,10 +76,20 @@ export default function VoteBar({ voteCount, totalMembers, voters }: Props) {
             ))}
           </div>
           {voters.length > 6 && (
-            <span className="text-xs text-gray-400 ml-2">+{voters.length - 6} more</span>
+            <span
+              className="text-xs ml-2"
+              style={{ color: 'var(--color-muted)', fontFamily: 'var(--font-body)' }}
+            >
+              +{voters.length - 6} more
+            </span>
           )}
           {voters.length === 1 && (
-            <span className="text-xs text-gray-500 ml-2">{voters[0].name} voted</span>
+            <span
+              className="text-xs ml-2"
+              style={{ color: 'var(--color-muted)', fontFamily: 'var(--font-body)' }}
+            >
+              {voters[0].name} voted
+            </span>
           )}
         </div>
       )}

@@ -34,6 +34,20 @@ export default function OptionCard({
   onDelete,
   canDelete,
 }: Props) {
+  const cardStyle = isLocked
+    ? {
+        borderColor: '#1D7575',
+        background: 'rgba(29, 117, 117, 0.06)',
+      }
+    : isVotedByMe
+    ? undefined // handled by .option-card-voted class
+    : isLeading
+    ? undefined // handled by .option-card-leading class
+    : {
+        borderColor: '#E5DDD2',
+        background: '#FFFFFF',
+      }
+
   return (
     <motion.div
       layout
@@ -42,28 +56,45 @@ export default function OptionCard({
       exit={{ opacity: 0, y: -8 }}
       className={`relative rounded-2xl border-2 p-4 transition-all ${
         isLocked
-          ? 'border-green-500 bg-green-50'
+          ? ''
           : isVotedByMe
-          ? 'option-card-voted border-green-400 bg-white'
+          ? 'option-card-voted'
           : isLeading
-          ? 'option-card-leading border-green-300'
-          : 'border-gray-200 bg-white hover:border-gray-300'
+          ? 'option-card-leading'
+          : ''
       }`}
+      style={cardStyle}
     >
       {/* Badge */}
       {isLeading && !isLocked && (
-        <span className="absolute top-3 right-3 text-[11px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">
+        <span
+          className="absolute top-3 right-3 text-[11px] px-2 py-0.5 rounded-full font-semibold"
+          style={{
+            background: 'rgba(232, 96, 28, 0.1)',
+            color: '#E8601C',
+            border: '1px solid rgba(232, 96, 28, 0.2)',
+            fontFamily: 'var(--font-body)',
+          }}
+        >
           ✨ Leading
         </span>
       )}
       {isLocked && (
-        <span className="absolute top-3 right-3 text-[11px] bg-green-600 text-white px-2.5 py-0.5 rounded-full font-semibold">
+        <span
+          className="absolute top-3 right-3 text-[11px] px-2.5 py-0.5 rounded-full font-semibold text-white"
+          style={{ background: '#1D7575', fontFamily: 'var(--font-body)' }}
+        >
           🔒 Chosen
         </span>
       )}
 
       <div className={isLocked || isLeading ? 'pr-20' : 'pr-4'}>
-        <p className="font-semibold text-gray-900 text-sm">{option.title}</p>
+        <p
+          className="font-semibold text-sm"
+          style={{ color: '#120D09', fontFamily: 'var(--font-body)' }}
+        >
+          {option.title}
+        </p>
 
         {option.link && isValidUrl(option.link) && (
           <a
@@ -71,17 +102,28 @@ export default function OptionCard({
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="inline-flex items-center gap-1 text-xs text-blue-500 hover:text-blue-700 mt-1 font-medium"
+            className="inline-flex items-center gap-1 text-xs mt-1 font-medium hover:underline"
+            style={{ color: '#1D7575' }}
           >
             🔗 View link
           </a>
         )}
         {option.link && !isValidUrl(option.link) && (
-          <span className="text-xs text-gray-400 mt-1 block">⚠️ Invalid link</span>
+          <span
+            className="text-xs mt-1 block"
+            style={{ color: 'var(--color-muted)', fontFamily: 'var(--font-body)' }}
+          >
+            ⚠️ Invalid link
+          </span>
         )}
 
         {option.notes && (
-          <p className="text-xs text-gray-500 mt-1 leading-relaxed">{option.notes}</p>
+          <p
+            className="text-xs mt-1 leading-relaxed"
+            style={{ color: 'var(--color-muted)', fontFamily: 'var(--font-body)' }}
+          >
+            {option.notes}
+          </p>
         )}
       </div>
 
@@ -95,11 +137,12 @@ export default function OptionCard({
             aria-label={isVotedByMe ? `Remove vote for ${option.title}` : `Vote for ${option.title}`}
             aria-pressed={isVotedByMe}
             whileTap={{ scale: 0.93 }}
-            className={`flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl transition-all disabled:opacity-60 ${
-              isVotedByMe
-                ? 'bg-green-600 text-white shadow-sm'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
+            className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl transition-all disabled:opacity-60"
+            style={{
+              background: isVotedByMe ? '#E8601C' : 'rgba(18, 13, 9, 0.07)',
+              color: isVotedByMe ? '#FFFFFF' : '#4A3D33',
+              fontFamily: 'var(--font-body)',
+            }}
           >
             {isPending ? (
               <svg className="animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24">
@@ -117,7 +160,8 @@ export default function OptionCard({
             <button
               onClick={() => onDelete(option.id)}
               aria-label={`Remove option: ${option.title}`}
-              className="text-xs text-red-400 hover:text-red-600 px-2 py-1 rounded-lg hover:bg-red-50 transition-colors"
+              className="text-xs px-2 py-1 rounded-lg transition-colors"
+              style={{ color: '#C44A12', fontFamily: 'var(--font-body)' }}
             >
               Remove
             </button>

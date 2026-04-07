@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { getMembers } from '../api/members'
 import type { Member } from '../types'
@@ -6,27 +6,44 @@ import type { Member } from '../types'
 export function useMembers(tripId: string | undefined) {
   const [members, setMembers] = useState<Member[]>([])
 
+  const reload = useCallback(async () => {
+    if (!tripId) return
+    const data = await getMembers(tripId)
+    setMembers(data)
+  }, [tripId])
+
   useEffect(() => {
     if (!tripId) return
-    getMembers(tripId).then(setMembers)
+    reload()
 
     const channel = supabase
       .channel(`members-${tripId}`)
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'members', filter: `trip_id=eq.${tripId}` },
-        (payload) => setMembers((prev) => [...prev, payload.new as Member])
+        // No server-side filter — client-side check is more reliable across Supabase plans
+        { event: 'INSERT', schema: 'public', table: 'members' },
+        (payload) => {
+          const newMember = payload.new as Member
+          if (newMember.trip_id !== tripId) return
+          setMembers((prev) => {
+            if (prev.some((m) => m.id === newMember.id)) return prev
+            return [...prev, newMember]
+          })
+        }
       )
       .on(
         'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'members', filter: `trip_id=eq.${tripId}` },
-        (payload) => setMembers((prev) =>
-          prev.map((m) => m.id === payload.new.id ? payload.new as Member : m)
-        )
+        { event: 'UPDATE', schema: 'public', table: 'members' },
+        (payload) => {
+          const updated = payload.new as Member
+          if (updated.trip_id !== tripId) return
+          setMembers((prev) => prev.map((m) => m.id === updated.id ? updated : m))
+        }
       )
       .subscribe()
-    return () => { supabase.removeChannel(channel) }
-  }, [tripId])
 
-  return { members }
+    return () => { supabase.removeChannel(channel) }
+  }, [tripId, reload])
+
+  return { members, reload }
 }

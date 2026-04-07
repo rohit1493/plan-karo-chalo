@@ -14,15 +14,32 @@ interface Props {
 
 export default function UpcomingStage({ type }: Props) {
   return (
-    <div className="bg-gray-50 rounded-2xl border border-dashed border-gray-200 px-4 py-3.5 opacity-40">
+    <div
+      className="rounded-2xl px-4 py-3.5 opacity-40"
+      style={{
+        background: 'rgba(18, 13, 9, 0.03)',
+        border: '1.5px dashed rgba(18, 13, 9, 0.15)',
+      }}
+    >
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-xl bg-gray-200 flex items-center justify-center text-sm">
+        <div
+          className="w-8 h-8 rounded-xl flex items-center justify-center text-sm"
+          style={{ background: 'rgba(18, 13, 9, 0.08)' }}
+        >
           {stageIcons[type]}
         </div>
-        <span className="text-sm font-medium text-gray-500" style={{ fontFamily: 'Outfit, sans-serif' }}>
+        <span
+          className="text-sm font-medium"
+          style={{ color: '#4A3D33', fontFamily: 'var(--font-display)' }}
+        >
           {stageLabel(type)}
         </span>
-        <span className="text-xs text-gray-400 ml-auto font-medium">Upcoming</span>
+        <span
+          className="text-xs ml-auto font-medium"
+          style={{ color: 'var(--color-muted)', fontFamily: 'var(--font-body)' }}
+        >
+          Upcoming
+        </span>
       </div>
     </div>
   )

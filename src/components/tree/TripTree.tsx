@@ -10,9 +10,9 @@ interface Props {
 }
 
 const STATE_CONFIG = {
-  seed:    { emoji: '🌱', color: '#86EFAC', label: 'Just planted' },
-  sprout:  { emoji: '🌿', color: '#4ADE80', label: 'Growing' },
-  healthy: { emoji: '🌳', color: '#22C55E', label: 'Thriving' },
+  seed:    { emoji: '🌱', color: '#F0A500', label: 'Just planted' },
+  sprout:  { emoji: '🌿', color: '#E8601C', label: 'Growing' },
+  healthy: { emoji: '🌳', color: '#C44A12', label: 'Thriving' },
   wilting: { emoji: '🥀', color: '#FBBF24', label: 'Needs attention' },
 }
 
@@ -35,7 +35,8 @@ export default function TripTree({ trip, members, stages }: Props) {
 
   return (
     <div
-      className="bg-white rounded-2xl border border-gray-200 p-4"
+      className="bg-white rounded-2xl p-4"
+      style={{ border: '1px solid rgba(18, 13, 9, 0.08)', boxShadow: '0 2px 8px rgba(18, 13, 9, 0.04)' }}
       aria-label="Trip health indicator"
       role="region"
     >
@@ -74,8 +75,8 @@ export default function TripTree({ trip, members, stages }: Props) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-1">
             <span
-              className="text-sm font-bold text-gray-800"
-              style={{ fontFamily: 'Outfit, sans-serif' }}
+              className="text-sm font-bold"
+              style={{ fontFamily: 'var(--font-display)', color: '#120D09' }}
             >
               Trip Tree
             </span>
@@ -84,11 +85,11 @@ export default function TripTree({ trip, members, stages }: Props) {
             </span>
           </div>
           <div className="flex items-center justify-between mb-1.5">
-            <p className="text-xs text-gray-500" aria-live="polite">{health.message}</p>
-            <span className="text-xs text-gray-400">{health.pct}%</span>
+            <p className="text-xs" style={{ color: 'var(--color-muted)', fontFamily: 'var(--font-body)' }} aria-live="polite">{health.message}</p>
+            <span className="text-xs" style={{ color: 'var(--color-muted)', fontFamily: 'var(--font-body)' }}>{health.pct}%</span>
           </div>
           {/* Mini bar */}
-          <div className="bg-gray-100 rounded-full h-1.5 overflow-hidden">
+          <div className="rounded-full h-1.5 overflow-hidden" style={{ background: 'rgba(18, 13, 9, 0.08)' }}>
             <motion.div
               className="h-full rounded-full"
               style={{ background: cfg.color }}

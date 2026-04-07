@@ -17,12 +17,12 @@ export default function TripHeader({ trip, memberCount }: Props) {
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0">
             <h1
-              className="text-base font-bold text-gray-900 leading-tight truncate"
-              style={{ fontFamily: 'Outfit, sans-serif' }}
+              className="text-base font-bold leading-tight truncate"
+              style={{ fontFamily: 'var(--font-display)', color: '#120D09' }}
             >
               🌴 {trip.name}
             </h1>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <p className="text-xs mt-0.5" style={{ color: 'var(--color-muted)', fontFamily: 'var(--font-body)' }}>
               {memberCount} {memberCount === 1 ? 'member' : 'members'}
             </p>
           </div>
@@ -31,39 +31,63 @@ export default function TripHeader({ trip, memberCount }: Props) {
             <motion.span
               initial={{ scale: 0.8 }}
               animate={{ scale: 1 }}
-              className="flex-shrink-0 bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
+              className="flex-shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
+              style={{
+                background: 'rgba(29, 117, 117, 0.12)',
+                color: '#1D7575',
+                border: '1px solid rgba(29, 117, 117, 0.25)',
+                fontFamily: 'var(--font-body)',
+              }}
             >
               ✅ Confirmed
             </motion.span>
           ) : (
-            <span className="flex-shrink-0 text-xs font-medium text-gray-400 bg-gray-100 px-2.5 py-1 rounded-full whitespace-nowrap">
+            <span
+              className="flex-shrink-0 text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap"
+              style={{
+                background: 'rgba(18, 13, 9, 0.07)',
+                color: 'var(--color-muted)',
+                fontFamily: 'var(--font-body)',
+              }}
+            >
               Stage {activeStage + 1}/4
             </span>
           )}
         </div>
 
-        {/* Animated progress dots */}
+        {/* Animated progress segments */}
         {trip.status !== 'confirmed' && (
           <div className="mt-2.5 flex gap-1.5 items-center">
             {STAGE_LABELS.map((label, i) => (
               <div key={label} className="flex-1 flex flex-col gap-1">
                 <motion.div
-                  className={`h-1.5 rounded-full ${
-                    i < activeStage
-                      ? 'bg-green-500'
-                      : i === activeStage
-                      ? 'bg-green-300'
-                      : 'bg-gray-200'
-                  }`}
+                  className="h-1.5 rounded-full"
+                  style={{
+                    background:
+                      i < activeStage
+                        ? '#E8601C'
+                        : i === activeStage
+                        ? '#F0A500'
+                        : 'rgba(18, 13, 9, 0.12)',
+                  }}
                   initial={false}
                   animate={{
                     scaleX: i === activeStage ? [1, 1.02, 1] : 1,
                   }}
                   transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
                 />
-                <p className={`text-[9px] font-medium text-center truncate ${
-                  i < activeStage ? 'text-green-600' : i === activeStage ? 'text-green-400' : 'text-gray-300'
-                }`}>
+                <p
+                  className="text-[9px] font-medium text-center truncate"
+                  style={{
+                    color:
+                      i < activeStage
+                        ? '#E8601C'
+                        : i === activeStage
+                        ? '#F0A500'
+                        : 'rgba(18, 13, 9, 0.25)',
+                    fontFamily: 'var(--font-body)',
+                  }}
+                >
                   {label}
                 </p>
               </div>

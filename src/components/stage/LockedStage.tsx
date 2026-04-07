@@ -14,7 +14,13 @@ export default function LockedStage({ stage, totalMembers }: Props) {
   const lockedOpt = stage.options.find((o) => o.id === stage.locked_option_id)
 
   return (
-    <div className="bg-green-50 rounded-2xl border border-green-200 overflow-hidden">
+    <div
+      className="rounded-2xl overflow-hidden"
+      style={{
+        background: 'rgba(29, 117, 117, 0.06)',
+        border: '1px solid rgba(29, 117, 117, 0.22)',
+      }}
+    >
       <button
         onClick={() => setExpanded((v) => !v)}
         aria-expanded={expanded}
@@ -23,16 +29,24 @@ export default function LockedStage({ stage, totalMembers }: Props) {
       >
         <div>
           <div className="flex items-center gap-1.5">
-            <span className="text-[11px] font-semibold text-green-600 uppercase tracking-wider">🔒 Locked</span>
+            <span
+              className="text-[11px] font-semibold uppercase tracking-wider"
+              style={{ color: '#1D7575', fontFamily: 'var(--font-body)' }}
+            >
+              🔒 Locked
+            </span>
           </div>
           <div className="flex items-center gap-2 mt-0.5">
             <span
-              className="text-sm font-bold text-gray-900"
-              style={{ fontFamily: 'Outfit, sans-serif' }}
+              className="text-sm font-bold"
+              style={{ color: '#120D09', fontFamily: 'var(--font-display)' }}
             >
               {stageLabel(stage.type)}:
             </span>
-            <span className="text-sm text-gray-700 font-medium truncate max-w-[180px]">
+            <span
+              className="text-sm font-medium truncate max-w-[180px]"
+              style={{ color: '#2A4A4A', fontFamily: 'var(--font-body)' }}
+            >
               {lockedOpt?.title ?? '—'}
             </span>
           </div>
@@ -41,7 +55,8 @@ export default function LockedStage({ stage, totalMembers }: Props) {
         <motion.span
           animate={{ rotate: expanded ? 180 : 0 }}
           transition={{ duration: 0.2 }}
-          className="text-green-400 flex-shrink-0"
+          className="flex-shrink-0"
+          style={{ color: '#1D7575' }}
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />

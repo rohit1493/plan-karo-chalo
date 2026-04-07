@@ -10,6 +10,7 @@ import { useOnline } from '../hooks/useOnline'
 import TripHeader from '../components/layout/TripHeader'
 import BottomBar from '../components/layout/BottomBar'
 import OfflineBanner from '../components/layout/OfflineBanner'
+import InstallBanner from '../components/layout/InstallBanner'
 import JoinModal from '../components/onboarding/JoinModal'
 import StageList from '../components/stage/StageList'
 import TripTree from '../components/tree/TripTree'
@@ -25,10 +26,12 @@ export default function TripPage() {
   const { inviteCode } = useParams<{ inviteCode: string }>()
   const { trip, loading: tripLoading, error: tripError } = useTrip(inviteCode)
   const { member, loading: memberLoading, refetch: refetchMember } = useCurrentMember(trip?.id)
-  const { members } = useMembers(trip?.id)
+  const { members, reload: reloadMembers } = useMembers(trip?.id)
   const { stages, reload: reloadStages } = useStages(trip?.id)
   const { votedOptionIds, addVote, removeVote, reload: reloadVotes } = useVotes(member?.id)
   const isOnline = useOnline()
+
+  const isPlanner = member?.role !== 'contributor'
 
   const votedMemberIdsOnActiveStage = useMemo(() => {
     const activeStage = stages.find((s) => s.order === (trip?.current_stage ?? 0) && !s.is_locked)
@@ -37,6 +40,7 @@ export default function TripPage() {
 
   function handleJoined(_newMember: Member) {
     refetchMember()
+    reloadMembers()
     reloadVotes()
   }
 
@@ -48,7 +52,8 @@ export default function TripPage() {
   if (tripLoading || memberLoading) {
     return (
       <motion.div
-        className="min-h-screen bg-[#FFFBF5] flex flex-col"
+        className="min-h-screen flex flex-col"
+      style={{ background: 'var(--color-paper)' }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -76,7 +81,8 @@ export default function TripPage() {
   if (tripError || !trip) {
     return (
       <motion.div
-        className="min-h-screen flex items-center justify-center bg-[#FFFBF5] px-4"
+        className="min-h-screen flex items-center justify-center px-4"
+        style={{ background: 'var(--color-paper)' }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -84,7 +90,7 @@ export default function TripPage() {
       >
         <div className="text-center max-w-xs">
           <div className="text-5xl mb-4">🔍</div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2" style={{ fontFamily: 'Outfit, sans-serif' }}>
+          <h2 className="text-xl font-bold mb-2" style={{ fontFamily: 'var(--font-display)', color: '#120D09' }}>
             Trip not found
           </h2>
           <p className="text-sm text-gray-500 mb-6">
@@ -92,7 +98,8 @@ export default function TripPage() {
           </p>
           <a
             href="/"
-            className="inline-flex items-center gap-1.5 bg-green-600 text-white font-semibold px-5 py-3 rounded-xl btn-glow text-sm"
+            className="inline-flex items-center gap-1.5 text-white font-semibold px-5 py-3 rounded-xl btn-glow text-sm"
+            style={{ background: '#E8601C', fontFamily: 'var(--font-display)' }}
           >
             Start a new trip →
           </a>
@@ -103,12 +110,15 @@ export default function TripPage() {
 
   return (
     <motion.div
-      className="min-h-screen bg-[#FFFBF5] flex flex-col"
+      className="min-h-screen flex flex-col"
+      style={{ background: 'var(--color-paper)' }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.25 }}
     >
+      <InstallBanner isPlanner={!!member && isPlanner} />
+
       <AnimatePresence>
         {!isOnline && <OfflineBanner key="offline" />}
       </AnimatePresence>
@@ -129,8 +139,8 @@ export default function TripPage() {
           ) : member ? (
             <motion.div
               key="planning"
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               transition={{ duration: 0.35 }}
               className="space-y-4"
             >

@@ -29,23 +29,48 @@ export default function MemberList({ members, stages, trip }: Props) {
   )
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-4">
+    <div
+      className="rounded-2xl p-4"
+      style={{
+        background: '#FFFFFF',
+        border: '1px solid rgba(18, 13, 9, 0.08)',
+        boxShadow: '0 2px 8px rgba(18, 13, 9, 0.04)',
+      }}
+    >
       <div className="flex items-center justify-between mb-3">
         <h4
-          className="text-sm font-bold text-gray-700"
-          style={{ fontFamily: 'Outfit, sans-serif' }}
+          className="text-sm font-bold"
+          style={{ fontFamily: 'var(--font-display)', color: '#120D09' }}
         >
           Members
         </h4>
-        <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+        <span
+          className="text-xs px-2 py-0.5 rounded-full"
+          style={{
+            background: 'rgba(18, 13, 9, 0.07)',
+            color: 'var(--color-muted)',
+            fontFamily: 'var(--font-body)',
+          }}
+        >
           {votedMemberIds.size}/{members.length} voted
         </span>
       </div>
 
       {members.length === 1 && (
-        <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5 mb-3 flex items-center gap-2">
-          <span>📤</span>
-          <span>Share the trip link so others can join and vote!</span>
+        <div
+          className="rounded-xl px-3 py-2.5 mb-3 flex items-center gap-2"
+          style={{
+            background: 'rgba(240, 165, 0, 0.1)',
+            border: '1px solid rgba(240, 165, 0, 0.3)',
+          }}
+        >
+          <span aria-hidden="true">📤</span>
+          <span
+            className="text-xs"
+            style={{ color: '#7A5C00', fontFamily: 'var(--font-body)' }}
+          >
+            Share the trip link so others can join and vote!
+          </span>
         </div>
       )}
 
@@ -60,11 +85,13 @@ export default function MemberList({ members, stages, trip }: Props) {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: i * 0.05 }}
               title={`${m.name}${isOrganiser ? ' (organiser)' : ''}${hasVoted ? ' — voted' : ' — not voted yet'}`}
-              className={`flex items-center gap-2 text-xs px-2.5 py-1.5 rounded-full border transition-all ${
-                hasVoted
-                  ? 'bg-green-50 border-green-200 text-green-800'
-                  : 'bg-gray-50 border-gray-200 text-gray-600'
-              }`}
+              className="flex items-center gap-2 text-xs px-2.5 py-1.5 rounded-full border transition-all"
+              style={{
+                background: hasVoted ? 'rgba(232, 96, 28, 0.07)' : 'rgba(18, 13, 9, 0.04)',
+                borderColor: hasVoted ? 'rgba(232, 96, 28, 0.25)' : 'rgba(18, 13, 9, 0.1)',
+                color: hasVoted ? '#8B3A10' : '#4A3D33',
+                fontFamily: 'var(--font-body)',
+              }}
             >
               {/* Mini avatar */}
               <div
@@ -77,15 +104,23 @@ export default function MemberList({ members, stages, trip }: Props) {
               <span className="font-medium">{m.name}</span>
 
               {isOrganiser && (
-                <span title="Organiser" className="text-[10px]">👑</span>
+                <span title="Organiser" className="text-[10px]" aria-label="organiser">👑</span>
               )}
 
               {/* Vote status dot */}
               {!hasVoted && (
-                <span className="w-1.5 h-1.5 rounded-full bg-gray-300 flex-shrink-0" />
+                <span
+                  className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                  style={{ background: 'rgba(18, 13, 9, 0.2)' }}
+                />
               )}
               {hasVoted && (
-                <span className="text-green-500 text-[11px] flex-shrink-0">✓</span>
+                <span
+                  className="text-[11px] flex-shrink-0"
+                  style={{ color: '#E8601C' }}
+                >
+                  ✓
+                </span>
               )}
             </motion.div>
           )

@@ -7,11 +7,11 @@ async function fetchStages(tripId: string): Promise<StageWithOptions[]> {
     .from('stages')
     .select(`
       *,
-      options (
+      options!options_stage_id_fkey (
         *,
         votes ( member_id, members ( id, name ) )
       ),
-      locked_option:locked_option_id ( * )
+      locked_option:options!stages_locked_option_id_fkey ( * )
     `)
     .eq('trip_id', tripId)
     .order('order')
@@ -32,7 +32,6 @@ async function fetchStages(tripId: string): Promise<StageWithOptions[]> {
 export function useStages(tripId: string | undefined) {
   const [stages, setStages] = useState<StageWithOptions[]>([])
   const [loading, setLoading] = useState(true)
-  // Debounce ref: batch rapid vote events into one fetch
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const reload = useCallback(async () => {
@@ -57,8 +56,6 @@ export function useStages(tripId: string | undefined) {
     reload()
   }, [reload])
 
-  // Realtime: votes on stages in this trip → debounced reload
-  // Stages UPDATE (lock event) → immediate reload
   useEffect(() => {
     if (!tripId) return
 
@@ -66,9 +63,6 @@ export function useStages(tripId: string | undefined) {
       .channel(`stages-${tripId}`)
       .on(
         'postgres_changes',
-        // Votes table has no trip_id — Supabase doesn't support join filters.
-        // We listen broadly but debounce (400ms) to collapse bursts and only
-        // refetch our own trip's data.
         { event: '*', schema: 'public', table: 'votes' },
         debouncedReload
       )
@@ -79,7 +73,6 @@ export function useStages(tripId: string | undefined) {
       )
       .on(
         'postgres_changes',
-        // options has no direct trip_id either — listen broadly, debounce handles it
         { event: 'INSERT', schema: 'public', table: 'options' },
         debouncedReload
       )
