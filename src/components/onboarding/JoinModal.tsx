@@ -8,10 +8,27 @@ interface Props {
   tripId: string
   tripName: string
   memberCount: number
+  members?: { id: string; name: string }[]
+  currentStageLabel?: string
   onJoined: (member: Member) => void
 }
 
-export default function JoinModal({ tripId, tripName, memberCount, onJoined }: Props) {
+function initials(name: string): string {
+  return name.split(' ').map((w) => w[0]?.toUpperCase() ?? '').slice(0, 2).join('')
+}
+
+const AVATAR_COLORS = [
+  '#3B82F6', '#8B5CF6', '#EC4899', '#F59E0B',
+  '#F97316', '#14B8A6', '#6366F1', '#F43F5E',
+]
+
+function avatarColor(name: string): string {
+  let hash = 0
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length]
+}
+
+export default function JoinModal({ tripId, tripName, memberCount, members = [], currentStageLabel, onJoined }: Props) {
   const [name, setName] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -51,7 +68,7 @@ export default function JoinModal({ tripId, tripName, memberCount, onJoined }: P
         exit={{ y: '100%' }}
         transition={{ type: 'spring', stiffness: 350, damping: 32 }}
       >
-        {/* Decorative dot grid in header */}
+        {/* Decorative dot grid */}
         <div
           aria-hidden="true"
           className="absolute top-0 right-0 w-36 h-36 opacity-[0.05] pointer-events-none"
@@ -64,7 +81,7 @@ export default function JoinModal({ tripId, tripName, memberCount, onJoined }: P
         <div className="bottom-sheet-handle" />
 
         {/* Header */}
-        <div className="text-center mb-7 relative z-10">
+        <div className="text-center mb-6 relative z-10">
           <motion.div
             className="text-5xl mb-3"
             initial={{ scale: 0.5, rotate: -10 }}
@@ -87,18 +104,47 @@ export default function JoinModal({ tripId, tripName, memberCount, onJoined }: P
             {tripName}
           </h2>
 
-          {memberCount > 0 && (
+          {currentStageLabel && (
             <p
-              className="text-sm mt-2"
+              className="text-xs mt-1"
               style={{ color: 'var(--color-muted)', fontFamily: 'var(--font-body)' }}
             >
-              {memberCount === 1
-                ? '1 person is planning this trip'
-                : `${memberCount} people are planning this trip`}
-              {' '}— join them! 🎒
+              Currently deciding: <span className="font-semibold" style={{ color: '#120D09' }}>{currentStageLabel}</span>
             </p>
           )}
         </div>
+
+        {/* Member avatars */}
+        {members.length > 0 && (
+          <div className="mb-5 relative z-10">
+            <p
+              className="text-xs text-center mb-2"
+              style={{ color: 'var(--color-muted)', fontFamily: 'var(--font-body)' }}
+            >
+              {memberCount === 1 ? '1 person already in' : `${memberCount} people already in`}
+            </p>
+            <div className="flex justify-center gap-1.5 flex-wrap">
+              {members.slice(0, 6).map((m) => (
+                <div
+                  key={m.id}
+                  title={m.name}
+                  className="w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0"
+                  style={{ background: avatarColor(m.name) }}
+                >
+                  {initials(m.name)}
+                </div>
+              ))}
+              {members.length > 6 && (
+                <div
+                  className="w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-bold flex-shrink-0"
+                  style={{ background: 'rgba(18, 13, 9, 0.07)', color: 'var(--color-muted)' }}
+                >
+                  +{members.length - 6}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Form */}
         <form onSubmit={handleJoin} className="space-y-4 relative z-10">

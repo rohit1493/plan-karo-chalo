@@ -10,14 +10,11 @@ interface Props {
 }
 
 const STATE_CONFIG = {
-  seed:    { emoji: '🌱', color: '#F0A500', label: 'Just planted' },
-  sprout:  { emoji: '🌿', color: '#E8601C', label: 'Growing' },
-  healthy: { emoji: '🌳', color: '#C44A12', label: 'Thriving' },
-  wilting: { emoji: '🥀', color: '#FBBF24', label: 'Needs attention' },
+  seed:    { emoji: '🌱', color: '#F0A500', bg: 'rgba(240, 165, 0, 0.08)',   label: 'Just getting started' },
+  sprout:  { emoji: '🌿', color: '#E8601C', bg: 'rgba(232, 96, 28, 0.07)',   label: 'Votes rolling in' },
+  healthy: { emoji: '🌳', color: '#C44A12', bg: 'rgba(196, 74, 18, 0.07)',   label: 'Looking great!' },
+  wilting: { emoji: '🥀', color: '#FBBF24', bg: 'rgba(251, 191, 36, 0.08)',  label: 'Needs a nudge' },
 }
-
-const RADIUS = 28
-const CIRC = 2 * Math.PI * RADIUS
 
 export default function TripTree({ trip, members, stages }: Props) {
   const health = useMemo(() => {
@@ -25,80 +22,84 @@ export default function TripTree({ trip, members, stages }: Props) {
     if (!activeStage) return null
     const votedMemberIds = new Set(activeStage.options.flatMap((o) => o.voters.map((v) => v.id)))
     const lastVoteAt = trip.last_vote_at ? new Date(trip.last_vote_at) : null
-    return computeTreeHealth(members.length, votedMemberIds.size, lastVoteAt, new Date(trip.created_at))
+    return {
+      ...computeTreeHealth(members.length, votedMemberIds.size, lastVoteAt, new Date(trip.created_at)),
+      voted: votedMemberIds.size,
+      total: members.length,
+    }
   }, [trip, members, stages])
 
   if (!health) return null
 
   const cfg = STATE_CONFIG[health.state]
-  const dashoffset = CIRC - (health.pct / 100) * CIRC
 
   return (
     <div
-      className="bg-white rounded-2xl p-4"
-      style={{ border: '1px solid rgba(18, 13, 9, 0.08)', boxShadow: '0 2px 8px rgba(18, 13, 9, 0.04)' }}
-      aria-label="Trip health indicator"
-      role="region"
+      className="rounded-2xl p-4 flex items-center gap-4"
+      style={{
+        background: cfg.bg,
+        border: `1px solid ${cfg.color}30`,
+      }}
+      aria-label="Trip voting progress"
     >
-      <div className="flex items-center gap-4">
-        {/* SVG circular progress ring */}
-        <div className="relative flex-shrink-0 w-16 h-16">
-          <svg width="64" height="64" viewBox="0 0 64 64" className="rotate-[-90deg]">
-            {/* Track */}
-            <circle cx="32" cy="32" r={RADIUS} fill="none" stroke="#F3F4F6" strokeWidth="6" />
-            {/* Progress */}
-            <motion.circle
-              cx="32"
-              cy="32"
-              r={RADIUS}
-              fill="none"
-              stroke={cfg.color}
-              strokeWidth="6"
-              strokeLinecap="round"
-              strokeDasharray={CIRC}
-              initial={{ strokeDashoffset: CIRC }}
-              animate={{ strokeDashoffset: dashoffset }}
-              transition={{ duration: 1, ease: 'easeOut' }}
-            />
-          </svg>
-          {/* Emoji center */}
-          <div
-            className={`absolute inset-0 flex items-center justify-center text-2xl ${
-              health.state === 'healthy' ? 'breathe' : ''
-            }`}
+      {/* Emoji pulse */}
+      <div
+        className={`text-3xl flex-shrink-0 ${health.state === 'healthy' ? 'breathe' : ''}`}
+        aria-hidden="true"
+      >
+        {cfg.emoji}
+      </div>
+
+      {/* Text — vote count is the hero */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-baseline gap-1.5 mb-1">
+          <span
+            className="text-2xl font-extrabold leading-none"
+            style={{ fontFamily: 'var(--font-display)', color: '#120D09' }}
           >
-            {cfg.emoji}
-          </div>
+            {health.voted}
+          </span>
+          <span
+            className="text-sm font-medium"
+            style={{ color: 'var(--color-muted)', fontFamily: 'var(--font-body)' }}
+          >
+            of {health.total} voted
+          </span>
+          <span
+            className="ml-auto text-[11px] font-semibold px-2 py-0.5 rounded-full"
+            style={{
+              color: cfg.color,
+              background: '#fff',
+              border: `1px solid ${cfg.color}35`,
+              fontFamily: 'var(--font-body)',
+            }}
+          >
+            {cfg.label}
+          </span>
         </div>
 
-        {/* Text */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between mb-1">
-            <span
-              className="text-sm font-bold"
-              style={{ fontFamily: 'var(--font-display)', color: '#120D09' }}
-            >
-              Trip Tree
-            </span>
-            <span className="text-xs font-semibold" style={{ color: cfg.color }}>
-              {cfg.label}
-            </span>
-          </div>
-          <div className="flex items-center justify-between mb-1.5">
-            <p className="text-xs" style={{ color: 'var(--color-muted)', fontFamily: 'var(--font-body)' }} aria-live="polite">{health.message}</p>
-            <span className="text-xs" style={{ color: 'var(--color-muted)', fontFamily: 'var(--font-body)' }}>{health.pct}%</span>
-          </div>
-          {/* Mini bar */}
-          <div className="rounded-full h-1.5 overflow-hidden" style={{ background: 'rgba(18, 13, 9, 0.08)' }}>
-            <motion.div
-              className="h-full rounded-full"
-              style={{ background: cfg.color }}
-              initial={{ width: 0 }}
-              animate={{ width: `${Math.max(health.pct, 4)}%` }}
-              transition={{ duration: 0.8, ease: 'easeOut' }}
-            />
-          </div>
+        {/* Progress bar */}
+        <div
+          className="rounded-full h-1.5 overflow-hidden"
+          style={{ background: 'rgba(18, 13, 9, 0.1)' }}
+        >
+          <motion.div
+            className="h-full rounded-full"
+            style={{ background: cfg.color }}
+            initial={{ width: 0 }}
+            animate={{ width: `${Math.max(health.pct, 4)}%` }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
+          />
         </div>
+
+        {health.state === 'wilting' && (
+          <p
+            className="text-xs mt-1.5"
+            style={{ color: cfg.color, fontFamily: 'var(--font-body)' }}
+          >
+            No votes in a while — send a nudge!
+          </p>
+        )}
       </div>
     </div>
   )

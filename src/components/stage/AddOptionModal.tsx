@@ -13,8 +13,9 @@ interface Props {
 
 function formatDateRange(start: string, end: string): string {
   const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' }
-  const s = new Date(start + 'T00:00:00').toLocaleDateString('en-IN', opts)
-  const e = new Date(end + 'T00:00:00').toLocaleDateString('en-IN', opts)
+  const locale = navigator.language || 'en-IN'
+  const s = new Date(start + 'T00:00:00').toLocaleDateString(locale, opts)
+  const e = new Date(end + 'T00:00:00').toLocaleDateString(locale, opts)
   const year = new Date(end + 'T00:00:00').getFullYear()
   return `${s} – ${e}, ${year}`
 }
@@ -47,8 +48,9 @@ export default function AddOptionModal({ stageId, stageType, memberId, onAdded, 
     } catch { return false }
   }
 
+  const today = new Date().toISOString().split('T')[0]
   const canSubmit = isDateStage
-    ? !!(startDate && endDate && endDate >= startDate)
+    ? !!(startDate && endDate && endDate >= startDate && startDate >= today)
     : !!title.trim()
 
   async function handleSubmit(e: React.FormEvent) {
@@ -127,6 +129,7 @@ export default function AddOptionModal({ stageId, stageType, memberId, onAdded, 
                     type="date"
                     id="startDate"
                     value={startDate}
+                    min={today}
                     onChange={(e) => handleStartDate(e.target.value)}
                     className="float-label-input"
                     placeholder=" "

@@ -31,8 +31,6 @@ export default function TripPage() {
   const { votedOptionIds, addVote, removeVote, reload: reloadVotes } = useVotes(member?.id)
   const isOnline = useOnline()
 
-  const isPlanner = member?.role !== 'contributor'
-
   const votedMemberIdsOnActiveStage = useMemo(() => {
     const activeStage = stages.find((s) => s.order === (trip?.current_stage ?? 0) && !s.is_locked)
     return new Set((activeStage?.options ?? []).flatMap((o) => o.voters.map((v) => v.id)))
@@ -117,7 +115,7 @@ export default function TripPage() {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.25 }}
     >
-      <InstallBanner isPlanner={!!member && isPlanner} />
+      <InstallBanner />
 
       <AnimatePresence>
         {!isOnline && <OfflineBanner key="offline" />}
@@ -177,6 +175,8 @@ export default function TripPage() {
             tripId={trip.id}
             tripName={trip.name}
             memberCount={members.length}
+            members={members}
+            currentStageLabel={stages.find((s) => s.order === trip.current_stage && !s.is_locked)?.type}
             onJoined={handleJoined}
           />
         )}

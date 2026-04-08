@@ -4,27 +4,36 @@ import { shareInviteLink, shareNudgeLink, shareConfirmedLink } from '../../lib/w
 
 interface Props {
   trip: Trip
-  members: { id: string }[]
+  members: { id: string; name: string }[]
   votedMemberIds: Set<string>
   stages: StageWithOptions[]
+}
+
+const AVATAR_COLORS = [
+  '#3B82F6', '#8B5CF6', '#EC4899', '#F59E0B',
+  '#F97316', '#14B8A6', '#6366F1', '#F43F5E',
+]
+
+function avatarColor(name: string): string {
+  let hash = 0
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length]
+}
+
+function initials(name: string): string {
+  return name.split(' ').map((w) => w[0]?.toUpperCase() ?? '').slice(0, 2).join('')
 }
 
 export default function BottomBar({ trip, members, votedMemberIds, stages }: Props) {
   const unvotedCount = members.length - votedMemberIds.size
   const hasOptions = stages.some((s) => !s.is_locked && s.options.length > 0)
   const shouldNudge = members.length > 1 && unvotedCount > 0 && hasOptions
+  const unvotedMembers = members.filter((m) => !votedMemberIds.has(m.id))
 
   function getShareLink(): string {
     if (trip.status === 'confirmed') return shareConfirmedLink(trip.name, trip.invite_code, stages)
     if (shouldNudge) return shareNudgeLink(trip.name, trip.invite_code, unvotedCount)
     return shareInviteLink(trip.name, trip.invite_code)
-  }
-
-  function getShareLabel(): string {
-    if (trip.status === 'confirmed') return '🎉 Share Confirmed Plan'
-    if (shouldNudge) return `📣 Nudge ${unvotedCount} to vote`
-    if (members.length > 1) return '📤 Share Trip Link'
-    return '📤 Invite Friends to WhatsApp'
   }
 
   const isConfirmed = trip.status === 'confirmed'
@@ -46,9 +55,9 @@ export default function BottomBar({ trip, members, votedMemberIds, stages }: Pro
         <div className="max-w-lg mx-auto">
           <motion.a
             href={getShareLink()}
-            aria-label={getShareLabel()}
+            aria-label={isConfirmed ? '🎉 Share Confirmed Plan' : shouldNudge ? `Nudge ${unvotedCount} to vote` : 'Share trip link'}
             whileTap={{ scale: 0.97 }}
-            className="flex items-center justify-center gap-2 w-full font-bold py-3.5 rounded-2xl transition-colors text-white text-[15px]"
+            className="flex items-center justify-center gap-2.5 w-full font-bold py-3.5 rounded-2xl transition-colors text-white text-[15px]"
             style={{
               background: isConfirmed
                 ? 'linear-gradient(135deg, #E8601C 0%, #C44A12 100%)'
@@ -56,7 +65,28 @@ export default function BottomBar({ trip, members, votedMemberIds, stages }: Pro
               fontFamily: 'var(--font-display)',
             }}
           >
-            {getShareLabel()}
+            {isConfirmed ? (
+              <>🎉 Share Confirmed Plan</>
+            ) : shouldNudge ? (
+              <>
+                <span className="flex items-center -space-x-1.5">
+                  {unvotedMembers.slice(0, 3).map((m) => (
+                    <span
+                      key={m.id}
+                      className="w-6 h-6 rounded-full border-2 border-white flex items-center justify-center text-[9px] font-bold text-white flex-shrink-0"
+                      style={{ background: avatarColor(m.name) }}
+                    >
+                      {initials(m.name)}
+                    </span>
+                  ))}
+                </span>
+                <span>Nudge {unvotedCount} to vote →</span>
+              </>
+            ) : members.length > 1 ? (
+              <>📤 Share Trip Link</>
+            ) : (
+              <>📤 Invite Friends to WhatsApp</>
+            )}
           </motion.a>
         </div>
       </div>

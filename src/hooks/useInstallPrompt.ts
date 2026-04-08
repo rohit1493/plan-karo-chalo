@@ -5,10 +5,27 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
 }
 
+function isIOS() {
+  return /iphone|ipad|ipod/i.test(navigator.userAgent)
+}
+
+function isInStandaloneMode() {
+  return ('standalone' in navigator && (navigator as { standalone?: boolean }).standalone === true) ||
+    window.matchMedia('(display-mode: standalone)').matches
+}
+
 export function useInstallPrompt() {
   const [prompt, setPrompt] = useState<BeforeInstallPromptEvent | null>(null)
+  const [showIOSHint, setShowIOSHint] = useState(false)
 
   useEffect(() => {
+    if (isInStandaloneMode()) return
+
+    if (isIOS()) {
+      const t = setTimeout(() => setShowIOSHint(true), 2000)
+      return () => clearTimeout(t)
+    }
+
     const handler = (e: Event) => {
       e.preventDefault()
       setPrompt(e as BeforeInstallPromptEvent)
@@ -26,7 +43,8 @@ export function useInstallPrompt() {
 
   function dismiss() {
     setPrompt(null)
+    setShowIOSHint(false)
   }
 
-  return { canInstall: !!prompt, install, dismiss }
+  return { canInstall: !!prompt, showIOSHint, install, dismiss }
 }

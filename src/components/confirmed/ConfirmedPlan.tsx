@@ -1,5 +1,12 @@
 import { useEffect } from 'react'
 import { motion } from 'framer-motion'
+
+function isSafeUrl(url: string): boolean {
+  try {
+    const p = new URL(url)
+    return p.protocol === 'http:' || p.protocol === 'https:'
+  } catch { return false }
+}
 import confetti from 'canvas-confetti'
 import type { StageWithOptions } from '../../types'
 import { stageLabel } from '../../lib/whatsapp'
@@ -123,7 +130,7 @@ export default function ConfirmedPlan({ stages }: Props) {
                   {locked.notes}
                 </p>
               )}
-              {locked.link && (
+              {locked.link && isSafeUrl(locked.link) && (
                 <a
                   href={locked.link}
                   target="_blank"

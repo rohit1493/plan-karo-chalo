@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
 import type { Member, StageWithOptions, OptionWithVotes } from '../../types'
+import { useOnline } from '../../hooks/useOnline'
 import { stageLabel } from '../../lib/whatsapp'
 import { castVote, uncastVote } from '../../api/votes'
 import { deleteOption } from '../../api/options'
@@ -32,6 +33,7 @@ export default function ActiveStage({
   const [lockOption, setLockOption] = useState<OptionWithVotes | null>(null)
   const [pendingVotes, setPendingVotes] = useState<Set<string>>(new Set())
   const isPlanner = currentMember.role !== 'contributor'
+  const isOnline = useOnline()
 
   const maxVotes = stage.options.length > 0
     ? Math.max(...stage.options.map((o) => o.vote_count), 0)
@@ -41,6 +43,10 @@ export default function ActiveStage({
   async function handleToggleVote(optionId: string) {
     if (stage.is_locked) return
     if (pendingVotes.has(optionId)) return
+    if (!isOnline) {
+      toast.error("You're offline — reconnect to vote")
+      return
+    }
 
     setPendingVotes((prev) => new Set([...prev, optionId]))
     if ('vibrate' in navigator) navigator.vibrate(40)
@@ -49,6 +55,7 @@ export default function ActiveStage({
       onVoteRemoved(optionId)
       try {
         await uncastVote(optionId, currentMember.id)
+        toast('Vote removed', { icon: '↩️', duration: 1500, position: 'top-center' })
       } catch {
         onVoteAdded(optionId)
         toast.error('Could not remove vote. Try again.')
@@ -57,6 +64,7 @@ export default function ActiveStage({
       onVoteAdded(optionId)
       try {
         await castVote(optionId, currentMember.id)
+        toast.success('Vote cast ✓', { duration: 1500, position: 'top-center' })
       } catch {
         onVoteRemoved(optionId)
         toast.error('Could not cast vote. Try again.')
@@ -271,6 +279,7 @@ export default function ActiveStage({
             stage={stage}
             option={lockOption}
             memberId={currentMember.id}
+            totalMembers={totalMembers}
             onLocked={onStageChanged}
             onClose={() => setLockOption(null)}
           />

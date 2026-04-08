@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import confetti from 'canvas-confetti'
 import toast from 'react-hot-toast'
@@ -10,13 +10,26 @@ interface Props {
   stage: StageWithOptions
   option: OptionWithVotes
   memberId: string
+  totalMembers: number
   onLocked: () => void
   onClose: () => void
 }
 
-export default function LockModal({ stage, option, memberId, onLocked, onClose }: Props) {
+export default function LockModal({ stage, option, memberId, totalMembers, onLocked, onClose }: Props) {
   const [loading, setLoading] = useState(false)
   const [locked, setLocked] = useState(false)
+  const [confirmReady, setConfirmReady] = useState(false)
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+
+  useEffect(() => {
+    timerRef.current = setTimeout(() => setConfirmReady(true), 800)
+    return () => { if (timerRef.current) clearTimeout(timerRef.current) }
+  }, [])
+
+  const onLockedRef = useRef(onLocked)
+  const onCloseRef = useRef(onClose)
+  useEffect(() => { onLockedRef.current = onLocked }, [onLocked])
+  useEffect(() => { onCloseRef.current = onClose }, [onClose])
 
   useEffect(() => {
     if (!locked) return
@@ -29,12 +42,12 @@ export default function LockModal({ stage, option, memberId, onLocked, onClose }
       if (Date.now() < end) rafId = requestAnimationFrame(frame)
     }
     rafId = requestAnimationFrame(frame)
-    const timer = setTimeout(() => { onLocked(); onClose() }, 1400)
+    const timer = setTimeout(() => { onLockedRef.current(); onCloseRef.current() }, 1400)
     return () => {
       cancelAnimationFrame(rafId)
       clearTimeout(timer)
     }
-  }, [locked]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [locked])
 
   async function handleLock() {
     setLoading(true)
@@ -87,15 +100,27 @@ export default function LockModal({ stage, option, memberId, onLocked, onClose }
             {locked ? 'Decision locked!' : 'Lock this decision?'}
           </h3>
           {!locked && (
-            <p
-              className="text-sm mt-1.5 leading-relaxed"
-              style={{ color: 'var(--color-muted)', fontFamily: 'var(--font-body)' }}
-            >
-              Lock{' '}
-              <span className="font-semibold" style={{ color: '#120D09' }}>"{option.title}"</span>
-              {' '}as the final choice for{' '}
-              <span className="font-semibold" style={{ color: '#120D09' }}>{stageLabel(stage.type)}</span>?
-            </p>
+            <>
+              <p
+                className="text-sm mt-1.5 leading-relaxed"
+                style={{ color: 'var(--color-muted)', fontFamily: 'var(--font-body)' }}
+              >
+                Lock{' '}
+                <span className="font-semibold" style={{ color: '#120D09' }}>"{option.title}"</span>
+                {' '}as the final choice for{' '}
+                <span className="font-semibold" style={{ color: '#120D09' }}>{stageLabel(stage.type)}</span>?
+              </p>
+              <div
+                className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full"
+                style={{
+                  background: 'rgba(29, 117, 117, 0.1)',
+                  color: '#1D7575',
+                  border: '1px solid rgba(29, 117, 117, 0.2)',
+                }}
+              >
+                ✓ Won with {option.vote_count} of {totalMembers} vote{totalMembers !== 1 ? 's' : ''}
+              </div>
+            </>
           )}
         </div>
 
@@ -130,13 +155,13 @@ export default function LockModal({ stage, option, memberId, onLocked, onClose }
                 Cancel
               </motion.button>
               <motion.button
-                whileTap={{ scale: 0.97 }}
+                whileTap={confirmReady && !loading ? { scale: 0.97 } : {}}
                 onClick={handleLock}
-                disabled={loading}
-                className="flex-1 text-white font-bold py-3.5 rounded-2xl btn-glow disabled:shadow-none transition-colors"
+                disabled={loading || !confirmReady}
+                className="flex-1 text-white font-bold py-3.5 rounded-2xl btn-glow disabled:shadow-none transition-all"
                 style={{
-                  background: loading ? '#E5DDD2' : '#E8601C',
-                  color: loading ? '#9B8F82' : '#FFFFFF',
+                  background: loading || !confirmReady ? '#E5DDD2' : '#E8601C',
+                  color: loading || !confirmReady ? '#9B8F82' : '#FFFFFF',
                   fontFamily: 'var(--font-display)',
                 }}
               >
@@ -148,7 +173,7 @@ export default function LockModal({ stage, option, memberId, onLocked, onClose }
                     </svg>
                     Locking…
                   </span>
-                ) : '🔒 Lock It'}
+                ) : !confirmReady ? 'Hold on…' : '🔒 Lock It'}
               </motion.button>
             </div>
           </>

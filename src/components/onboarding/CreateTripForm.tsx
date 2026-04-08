@@ -9,7 +9,7 @@ export default function CreateTripForm() {
   const navigate = useNavigate()
   const [tripName, setTripName] = useState('')
   const [plannerName, setPlannerName] = useState('')
-  const [firstStage, setFirstStage] = useState<'date' | 'location'>('date')
+  const firstStage = 'date' as const
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -58,58 +58,6 @@ export default function CreateTripForm() {
           className="float-label-input"
         />
         <label htmlFor="plannerName" className="float-label-text">Your name (e.g. Priya)</label>
-      </div>
-
-      {/* Stage picker */}
-      <div>
-        <p
-          className="text-sm font-medium mb-3"
-          style={{ color: '#4A3D33', fontFamily: 'var(--font-body)' }}
-        >
-          What do you need to decide first?
-        </p>
-        <div className="grid grid-cols-2 gap-3">
-          {([
-            { val: 'date' as const, icon: '🗓️', title: 'Pick dates first', sub: 'Then choose a location' },
-            { val: 'location' as const, icon: '🏖️', title: 'Pick location first', sub: 'Then sort out dates' },
-          ]).map((opt) => (
-            <motion.button
-              key={opt.val}
-              type="button"
-              whileTap={{ scale: 0.97 }}
-              onClick={() => setFirstStage(opt.val)}
-              className="p-4 rounded-2xl border-2 text-left transition-all"
-              style={{
-                borderColor: firstStage === opt.val ? '#E8601C' : '#E5DDD2',
-                background: firstStage === opt.val ? 'rgba(232, 96, 28, 0.06)' : '#FFFFFF',
-              }}
-            >
-              <div className="text-2xl mb-1.5" aria-hidden="true">{opt.icon}</div>
-              <div
-                className="text-sm font-semibold"
-                style={{ color: '#120D09', fontFamily: 'var(--font-body)' }}
-              >
-                {opt.title}
-              </div>
-              <div
-                className="text-xs mt-0.5"
-                style={{ color: 'var(--color-muted)', fontFamily: 'var(--font-body)' }}
-              >
-                {opt.sub}
-              </div>
-              {firstStage === opt.val && (
-                <div
-                  className="mt-2 w-5 h-5 rounded-full flex items-center justify-center ml-auto"
-                  style={{ background: '#E8601C' }}
-                >
-                  <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-              )}
-            </motion.button>
-          ))}
-        </div>
       </div>
 
       {error && (
